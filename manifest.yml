@@ -1,0 +1,20 @@
+modules:
+  confluence:contentAction:
+    - key: heatmap-confluence-hello-world-content-action
+      resource: main
+      resolver:
+        function: resolver
+      viewportSize: medium
+      title: heatmap-confluence
+  function:
+    - key: resolver
+      handler: index.handler
+resources:
+  - key: main
+    path: static/hello-world/build
+app:
+  runtime:
+    name: nodejs22.x
+    memoryMB: 256
+    architecture: arm64
+  id: ari:cloud:ecosystem::app/86f99b37-9e67-4196-83a4-beb9d839994c
