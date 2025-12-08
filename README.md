@@ -1,6 +1,6 @@
 # Forge Hello World
 
-This project contains a Forge app written in Javascript that displays `Hello World!` in a Confluence content action. 
+This project contains a Forge app written in Javascript that displays `Hello World!` in a Confluence content byline item. 
 
 See [developer.atlassian.com/platform/forge/](https://developer.atlassian.com/platform/forge) for documentation and tutorials explaining Forge.
 

@@ -1,5 +1,5 @@
 {
-  "name": "confluence-content-action-custom-ui",
+  "name": "confluence-content-byline-custom-ui",
   "version": "1.1.16",
   "main": "index.js",
   "license": "MIT",

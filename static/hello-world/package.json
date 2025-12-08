@@ -1,11 +1,11 @@
 {
-  "name": "confluence-content-action-custom-ui-static",
-  "version": "0.1.60",
+  "name": "confluence-content-byline-custom-ui-static",
+  "version": "0.1.61",
   "private": true,
   "homepage": ".",
   "dependencies": {
     "@atlaskit/css-reset": "^6.6.2",
-    "@forge/bridge": "5.9.1",
+    "@forge/bridge": "5.10.0",
     "react": "^16",
     "react-dom": "^16"
   },

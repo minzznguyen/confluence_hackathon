@@ -10,7 +10,6 @@ function App() {
 
   return (
     <div>
-      <button onClick={() => view.close()}>Close</button>
       {data ? data : 'Loading...'}
     </div>
   );
