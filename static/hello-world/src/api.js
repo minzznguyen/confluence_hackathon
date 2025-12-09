@@ -1,11 +1,13 @@
 import { requestConfluence } from "@forge/bridge";
 
-const PAGE_ID = "622593";   // Hardcoded for now
-
 // Get Page Info (storage body)
-export async function getPageInfo() {
-  const pageId = PAGE_ID;
-
+// Pass in pageId to fetch specific page, or defaults to a fallback
+export async function getPageInfo(pageId = "622593") {
+  // Handle undefined/null/empty explicitly as backup
+  if (!pageId || pageId === 'undefined' || pageId === 'null') {
+    pageId = "622593";
+  }
+  
   const url = `/wiki/api/v2/pages/${pageId}?body-format=storage`;
 
   const response = await requestConfluence(url, {
@@ -24,7 +26,7 @@ export async function getPageInfo() {
 }
 
 // Get Inline Comments for the page
-export async function getInlineComments() {
+export async function getInlineComments(pageId) {
   const response = await requestConfluence(
     `/wiki/api/v2/inline-comments?body-format=atlas_doc_format&status=current`,
     { headers: { Accept: "application/json" } }
@@ -37,7 +39,7 @@ export async function getInlineComments() {
 
   const data = await response.json();
   // Filter only for this page
-  return data.results.filter((c) => c.pageId === PAGE_ID);
+  return data.results.filter((c) => c.pageId === pageId);
 }
 
 // Get User Info (given an accountId)

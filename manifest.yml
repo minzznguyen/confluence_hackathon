@@ -1,10 +1,46 @@
 modules:
   confluence:fullPage:
     - key: confluence-hackathon-full-page
+      title: Heatmap Analytics Dashboard
       resource: main
       resolver:
         function: resolver
       routePrefix: hello-world
+  
+  confluence:contentBylineItem:
+    - key: heatmap-content-byline
+      title: Heatmap Analytics
+      tooltip: Click to view heatmap analytics dashboard
+      icon: https://developer.atlassian.com/platform/forge/images/icons/issue.svg
+      resource: main
+      resolver:
+        function: resolver
+      viewportSize: small
+      viewportContainer: popup
+  
+  confluence:contentAction:
+    - key: heatmap-content-action
+      title: View Heatmap Analytics
+      resource: main
+      resolver:
+        function: resolver
+      viewportSize: small
+  
+  confluence:spacePage:
+    - key: heatmap-space-page
+      title: Heatmap Analytics
+      route: heatmap-space
+      resource: main
+      resolver:
+        function: resolver
+  
+  confluence:globalSettings:
+    - key: heatmap-global-settings
+      title: Heatmap Analytics Dashboard
+      resource: main
+      resolver:
+        function: resolver
+  
   function:
     - key: resolver
       handler: index.handler
@@ -21,3 +57,4 @@ permissions:
   scopes:
     - read:confluence-user
     - read:page:confluence
+    - storage:app
