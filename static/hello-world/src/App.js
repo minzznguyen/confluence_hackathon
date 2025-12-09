@@ -1,66 +1,107 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { getPageInfo } from "./api";
 
-function convertImagesToDownloadUrls(rawHtml, pageId, baseUrl) {
-  if (!rawHtml) return rawHtml;
+const baseUrl = "https://atlassianhackathon2025.atlassian.net";
 
-  return rawHtml.replace(
-    /<ac:image[^>]*>[\s\S]*?<ri:attachment[^>]*ri:filename="([^"]+)"[^>]*>[\s\S]*?<\/ac:image>/g,
-    (match, filename) => {
-      const imgUrl =
-        `${baseUrl}/download/attachments/${pageId}/${encodeURIComponent(filename)}`;
+// Convert <ac:image> + <ri:attachment> → <img>
+function convertConfluenceImages(html, pageId) {
+  if (!html) return html;
+
+  return html
+    // Convert <ac:image> blocks into <img> tags
+    .replace(/<ac:image[^>]*>([\s\S]*?)<\/ac:image>/g, (match, inner) => {
+      const filenameMatch = inner.match(/ri:filename="([^"]+)"/);
+      if (!filenameMatch) return "";
+
+      const filename = filenameMatch[1];
+
+      const imgUrl = `${baseUrl}/wiki/download/attachments/${pageId}/${filename}?api=v2`;
 
       return `
-        <div style="text-align:center; margin: 28px 0;">
-          <img src="${imgUrl}"
-               alt="${filename}"
-               style="max-width: 100%; border-radius: 8px;" />
-        </div>
+        <img 
+          src="${imgUrl}" 
+          style="max-width: 100%; 
+                 border-radius: 8px; 
+                 margin: 24px 0;
+                 display: block;"
+        />
       `;
-    }
-  );
+    })
+    // Remove inline comment markers
+    .replace(/<ac:inline-comment-marker[^>]*>.*?<\/ac:inline-comment-marker>/g, "");
 }
 
 export default function App() {
-  const [pageInfo, setPageInfo] = useState(null);
+  const [page, setPage] = useState(null);
+  const [html, setHtml] = useState("");
   const [error, setError] = useState(null);
 
   useEffect(() => {
     async function load() {
       try {
-        const { page } = await getPageInfo();
-        console.log(11111,page )
-        setPageInfo(page);
+        const p = await getPageInfo();
+        const pageId = p.id;
+
+        // Convert Confluence storage-format HTML -> real HTML
+        const converted = convertConfluenceImages(
+          p.body.storage.value,
+          pageId,
+        );
+
+        setPage(p);
+        setHtml(converted);
       } catch (err) {
+        console.error(err);
         setError(err.message);
       }
     }
+
     load();
   }, []);
 
-  if (error) return <p>❌ Error: {error}</p>;
-  if (!pageInfo) return <p>Loading page…</p>;
-
-  const html = pageInfo.body.storage.value;
-  const baseUrl = pageInfo._links.base; // e.g., https://atlassianhackathon2025.atlassian.net/wiki
-
-  const finalHtml = convertImagesToDownloadUrls(html, pageInfo.id, baseUrl);
+  if (error) return <p style={{ padding: 20 }}>Error: {error}</p>;
+  if (!page) return <p style={{ padding: 20 }}>Loading page…</p>;
 
   return (
-    <div style={{ padding: "32px", maxWidth: 900, margin: "0 auto" }}>
-      <h1 style={{ fontFamily: "Inter, Arial", marginBottom: 24 }}>
-        {pageInfo.title}
-      </h1>
+    <div
+      style={{
+        maxWidth: 820,
+        margin: "0 auto",
+        padding: "40px 24px",
+        fontFamily: "Inter, Arial, sans-serif",
+        lineHeight: "1.6",
+        color: "#172B4D",
+      }}
+    >
+      {/* Title */}
+      <h1 style={{ fontSize: 32, marginBottom: 8 }}>{page.title}</h1>
 
+      {/* Body Content */}
       <div
+        className="confluence-body"
+        dangerouslySetInnerHTML={{ __html: html }}
         style={{
-          fontFamily: "Inter, Arial",
-          color: "#172B4D",
-          lineHeight: 1.6,
-          fontSize: "16px",
+          fontSize: 16,
         }}
-        dangerouslySetInnerHTML={{ __html: finalHtml }}
       />
+
+      <style>{`
+        .confluence-body h1 {
+          font-size: 26px;
+          margin-top: 42px;
+          margin-bottom: 12px;
+          font-weight: 700;
+        }
+
+        .confluence-body p {
+          margin-bottom: 16px;
+        }
+
+        .confluence-body img {
+          border-radius: 8px;
+          max-width: 100%;
+        }
+      `}</style>
     </div>
   );
 }

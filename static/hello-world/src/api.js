@@ -20,10 +20,7 @@ export async function getPageInfo() {
   }
 
   const json = await response.json();
-  return {
-    pageId,
-    page: json
-  };
+  return json
 }
 
 // Get Inline Comments for the page
