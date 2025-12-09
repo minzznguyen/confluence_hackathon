@@ -5,11 +5,11 @@ export async function getInlineCommentsForCurrentPage() {
   const pageId = context.content?.id;
 
   if (!pageId) {
-    throw new Error("No pageId found. Are you using contentBylineItem?");
+    throw new Error("No pageId found. Context:", context);
   }
 
   const response = await requestConfluence(
-    `/wiki/api/v2/inline-comments?body-format=atlas_doc_format&status=current&limit=500`,
+    `/wiki/api/v2/inline-comments?body-format=atlas_doc_format&status=current`,
     { headers: { Accept: "application/json" } }
   );
 
