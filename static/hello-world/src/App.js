@@ -1,107 +1,56 @@
 import { useEffect, useState } from "react";
 import { getPageInfo } from "./api";
+import "./index.css";
 
-const baseUrl = "https://atlassianhackathon2025.atlassian.net";
+const BASE_URL = "https://atlassianhackathon2025.atlassian.net";
 
-// Convert <ac:image> + <ri:attachment> → <img>
-function convertConfluenceImages(html, pageId) {
-  if (!html) return html;
+// Convert only images; DO NOT touch inline styling
+function convertImages(html, pageId) {
+  if (!html) return "";
 
-  return html
-    // Convert <ac:image> blocks into <img> tags
-    .replace(/<ac:image[^>]*>([\s\S]*?)<\/ac:image>/g, (match, inner) => {
-      const filenameMatch = inner.match(/ri:filename="([^"]+)"/);
-      if (!filenameMatch) return "";
+  return html.replace(/<ac:image[^>]*>([\s\S]*?)<\/ac:image>/g, (_, inner) => {
+    const match = inner.match(/ri:filename="([^"]+)"/);
+    if (!match) return "";
 
-      const filename = filenameMatch[1];
+    const filename = match[1];
+    const url = `${BASE_URL}/wiki/download/attachments/${pageId}/${filename}?api=v2`;
 
-      const imgUrl = `${baseUrl}/wiki/download/attachments/${pageId}/${filename}?api=v2`;
-
-      return `
-        <img 
-          src="${imgUrl}" 
-          style="max-width: 100%; 
-                 border-radius: 8px; 
-                 margin: 24px 0;
-                 display: block;"
-        />
-      `;
-    })
-    // Remove inline comment markers
-    .replace(/<ac:inline-comment-marker[^>]*>.*?<\/ac:inline-comment-marker>/g, "");
+    return `<img src="${url}" class="conf-img" />`;
+  });
 }
 
 export default function App() {
   const [page, setPage] = useState(null);
   const [html, setHtml] = useState("");
-  const [error, setError] = useState(null);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     async function load() {
       try {
-        const p = await getPageInfo();
-        const pageId = p.id;
+        const page = await getPageInfo();
+        const raw = page.body.storage.value;
 
-        // Convert Confluence storage-format HTML -> real HTML
-        const converted = convertConfluenceImages(
-          p.body.storage.value,
-          pageId,
-        );
+        const cleaned = convertImages(raw, page.id);
 
-        setPage(p);
-        setHtml(converted);
+        setPage(page);
+        setHtml(cleaned);
       } catch (err) {
-        console.error(err);
         setError(err.message);
       }
     }
-
     load();
   }, []);
 
-  if (error) return <p style={{ padding: 20 }}>Error: {error}</p>;
-  if (!page) return <p style={{ padding: 20 }}>Loading page…</p>;
+  if (error) return <div className="conf-error">❌ {error}</div>;
+  if (!page) return <div className="conf-loading">Loading…</div>;
 
   return (
-    <div
-      style={{
-        maxWidth: 820,
-        margin: "0 auto",
-        padding: "40px 24px",
-        fontFamily: "Inter, Arial, sans-serif",
-        lineHeight: "1.6",
-        color: "#172B4D",
-      }}
-    >
-      {/* Title */}
-      <h1 style={{ fontSize: 32, marginBottom: 8 }}>{page.title}</h1>
-
-      {/* Body Content */}
+    <div className="conf-container">
+      <h1 className="conf-title">{page.title}</h1>
       <div
-        className="confluence-body"
+        className="conf-body"
         dangerouslySetInnerHTML={{ __html: html }}
-        style={{
-          fontSize: 16,
-        }}
       />
-
-      <style>{`
-        .confluence-body h1 {
-          font-size: 26px;
-          margin-top: 42px;
-          margin-bottom: 12px;
-          font-weight: 700;
-        }
-
-        .confluence-body p {
-          margin-bottom: 16px;
-        }
-
-        .confluence-body img {
-          border-radius: 8px;
-          max-width: 100%;
-        }
-      `}</style>
     </div>
   );
 }
