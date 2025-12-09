@@ -71,8 +71,8 @@ export default function App() {
           await invoke('setCurrentPageId', { pageId });
         }
         
-        // Navigate to full page
-        router.navigate(fullUrl);
+        // Open full page in new tab
+        router.open(fullUrl);
       }
     }).catch((err) => {
       console.error('Failed to get context:', err);
