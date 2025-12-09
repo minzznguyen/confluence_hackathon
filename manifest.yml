@@ -1,11 +1,11 @@
 modules:
   confluence:contentBylineItem:
-    - key: heatmap-confluence-hello-world-content-byline-item
+    - key: confluence-hackathon-hello-world-content-byline-item
       resource: main
       resolver:
         function: resolver
       viewportSize: medium
-      title: heatmap-confluence
+      title: confluence-hackathon
   function:
     - key: resolver
       handler: index.handler
@@ -17,4 +17,4 @@ app:
     name: nodejs22.x
     memoryMB: 256
     architecture: arm64
-  id: ari:cloud:ecosystem::app/56797e95-d2d6-49da-9925-67bbc93e284e
+  id: ari:cloud:ecosystem::app/3acd24dd-b581-4a2d-a922-79bc090be1ee
