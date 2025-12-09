@@ -2,7 +2,7 @@ import { requestConfluence, view } from "@forge/bridge";
 
 export async function getPageInfo() {
   const context = await view.getContext();
-  const pageId = context?.content?.id;
+  const pageId = context.extension?.content?.id;
 
   if (!pageId) {
     throw new Error("No pageId found. Context:", context);
