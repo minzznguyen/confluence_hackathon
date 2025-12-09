@@ -16,7 +16,7 @@ export async function getPageInfo() {
   if (!response.ok) {
     const text = await response.text();
     throw new Error(
-      `Page API failed: HTTP ${response.status}\nURL: ${url}\nBody:\n${text}`
+      `Page API failed: HTTP ${response.status}\nBody:\n${text}`
     );
   }
 
