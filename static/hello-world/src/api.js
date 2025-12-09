@@ -9,7 +9,7 @@ export async function getPageInfo() {
   }
 
   const response = await requestConfluence(
-    `/wiki/api/v2/pages/${pageId}?body-format=atlas_doc_format`,
+    `/wiki/api/v2/pages/${pageId}?body-format=storage`,
     { headers: { Accept: "application/json" } }
   );
 
