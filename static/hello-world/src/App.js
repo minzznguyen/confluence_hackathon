@@ -2,10 +2,9 @@ import { useEffect, useState } from "react";
 import { router, view, invoke } from "@forge/bridge";
 import { getPageInfo } from "./api";
 
-const baseUrl = "https://atlassianhackathon2025.atlassian.net";
-
 // Convert <ac:image> + <ri:attachment> → <img>
-function convertConfluenceImages(html, pageId) {
+// baseUrl will be determined from context at runtime
+function convertConfluenceImages(html, pageId, baseUrl) {
   if (!html) return html;
 
   return html
@@ -80,16 +79,36 @@ export default function App() {
 
     async function load() {
       try {
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        console.log('🔍 LOAD: Starting load function');
+        console.log('Site:', window.location.hostname);
+        console.log('Full URL:', window.location.href);
+        
         // Get context from Forge bridge
         const context = await view.getContext();
+        
+        console.log('Context:', {
+          type: context.extension?.type,
+          hasContent: !!context.extension?.content,
+          contentId: context.extension?.content?.id,
+          hasLocation: !!context.location,
+          location: context.location
+        });
         
         // Try to get pageId from extension context (works for byline/content action)
         let pageIdFromUrl = context.extension?.content?.id;
         let spaceIdFromUrl = context.extension?.space?.id;
         let spaceKeyFromUrl = context.extension?.space?.key;
         
+        console.log('Step 1 - From extension context:', {
+          pageId: pageIdFromUrl,
+          spaceId: spaceIdFromUrl,
+          spaceKey: spaceKeyFromUrl
+        });
+        
         // If not in extension context, parse from context.location (for full page)
         if (!pageIdFromUrl && context.location) {
+          console.log('Step 2 - Trying context.location:', context.location);
           const queryStart = context.location.indexOf('?');
           if (queryStart !== -1) {
             const queryString = context.location.substring(queryStart + 1);
@@ -98,32 +117,57 @@ export default function App() {
             pageIdFromUrl = params.get('pageId');
             spaceIdFromUrl = spaceIdFromUrl || params.get('spaceId');
             spaceKeyFromUrl = spaceKeyFromUrl || params.get('spaceKey');
+            
+            console.log('Extracted from context.location:', {
+              pageId: pageIdFromUrl,
+              spaceId: spaceIdFromUrl
+            });
           }
         }
         
         // Last resort: try Forge storage
         if (!pageIdFromUrl) {
+          console.log('Step 3 - Trying Forge storage...');
           try {
             const storageResult = await invoke('getCurrentPageId');
+            console.log('Storage result:', storageResult);
             if (storageResult && storageResult.pageId) {
               pageIdFromUrl = storageResult.pageId;
               spaceIdFromUrl = spaceIdFromUrl || storageResult.spaceId;
               spaceKeyFromUrl = spaceKeyFromUrl || storageResult.spaceKey;
+              console.log('✅ Retrieved from storage:', pageIdFromUrl);
             }
           } catch (e) {
-            // Silently fall back to default
+            console.error('❌ Storage failed:', e);
           }
         }
         
-        // Store context info to display
-        if (pageIdFromUrl) {
-          setContextInfo({
-            pageId: pageIdFromUrl,
-            spaceId: spaceIdFromUrl,
-            spaceKey: spaceKeyFromUrl
-          });
+        console.log('Final pageId to fetch:', pageIdFromUrl || 'default (622593)');
+        
+        // Extract base URL from context or construct from window
+        // Try to get from context.location or window.parent
+        let baseUrl = 'https://atlassianhackathon2025.atlassian.net'; // fallback
+        
+        if (context.location) {
+          // Parse base URL from context.location
+          const urlMatch = context.location.match(/^(https?:\/\/[^\/]+)/);
+          if (urlMatch) {
+            baseUrl = urlMatch[1];
+          }
         }
-
+        
+        // Try to extract from parent window as fallback
+        try {
+          const parentUrl = window.parent.location.origin;
+          if (parentUrl && parentUrl !== 'null') {
+            baseUrl = parentUrl;
+          }
+        } catch (e) {
+          // Cross-origin blocked, use fallback
+        }
+        
+        console.log('Using base URL:', baseUrl);
+        
         // Store context info to display
         if (pageIdFromUrl) {
           setContextInfo({
@@ -138,10 +182,11 @@ export default function App() {
         const p = pageIdFromUrl ? await getPageInfo(pageIdFromUrl) : await getPageInfo();
         const pageId = p.id;
 
-        // Convert Confluence storage-format HTML -> real HTML
+        // Convert Confluence storage-format HTML -> real HTML with dynamic base URL
         const converted = convertConfluenceImages(
           p.body.storage.value,
           pageId,
+          baseUrl
         );
 
         setPage(p);
@@ -155,34 +200,45 @@ export default function App() {
     load();
   }, [window.location.href]); // Re-run when URL changes to load new page data
 
-  if (error) return <p style={{ padding: 20 }}>Error: {error}</p>;
-  if (!page) return <p style={{ padding: 20 }}>Loading page…</p>;
+  if (error) return <p className="error-message">Error: {error}</p>;
+  if (!page) return <p className="loading-message">Loading page…</p>;
 
   return (
-    <div
-      style={{
-        maxWidth: 820,
-        margin: "0 auto",
-        padding: "40px 24px",
-        fontFamily: "Inter, Arial, sans-serif",
-        lineHeight: "1.6",
-        color: "#172B4D",
-      }}
-    >
+    <div className="page-container">
 
       {/* Title */}
-      <h1 style={{ fontSize: 32, marginBottom: 8 }}>{page.title}</h1>
+      <h1 className="page-title">{page.title}</h1>
 
       {/* Body Content */}
       <div
         className="confluence-body"
         dangerouslySetInnerHTML={{ __html: html }}
-        style={{
-          fontSize: 16,
-        }}
       />
 
       <style>{`
+        .error-message,
+        .loading-message {
+          padding: 20px;
+        }
+
+        .page-container {
+          max-width: 820px;
+          margin: 0 auto;
+          padding: 40px 24px;
+          font-family: Inter, Arial, sans-serif;
+          line-height: 1.6;
+          color: #172B4D;
+        }
+
+        .page-title {
+          font-size: 32px;
+          margin-bottom: 8px;
+        }
+
+        .confluence-body {
+          font-size: 16px;
+        }
+
         .confluence-body h1 {
           font-size: 26px;
           margin-top: 42px;
