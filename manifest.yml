@@ -1,11 +1,10 @@
 modules:
-  confluence:contentBylineItem:
-    - key: confluence-hackathon-hello-world-content-byline-item
+  confluence:fullPage:
+    - key: confluence-hackathon-full-page
       resource: main
       resolver:
         function: resolver
-      viewportSize: medium
-      title: confluence-hackathon
+      routePrefix: hello-world
   function:
     - key: resolver
       handler: index.handler
@@ -18,3 +17,7 @@ app:
     memoryMB: 256
     architecture: arm64
   id: ari:cloud:ecosystem::app/24e34540-92df-4b82-81a2-46340f7d3440
+permissions:
+  scopes:
+    - read:confluence-user
+    - read:page:confluence
