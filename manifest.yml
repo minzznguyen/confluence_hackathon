@@ -8,7 +8,7 @@ modules:
       title: heatmap-confluence
   function:
     - key: resolver
-      handler: src/resolver.run
+      handler: index.handler
 resources:
   - key: main
     path: static/hello-world/build
@@ -17,8 +17,8 @@ app:
     name: nodejs22.x
     memoryMB: 256
     architecture: arm64
-  id: ari:cloud:ecosystem::app/56797e95-d2d6-49da-9925-67bbc93e284e
+  id: ari:cloud:ecosystem::app/3acd24dd-b581-4a2d-a922-79bc090be1ee
 permissions:
   scopes:
     - read:confluence-content.all
-    - read:confluence-user
+    - read:comment:confluence
