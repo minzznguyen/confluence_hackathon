@@ -69,7 +69,10 @@ view.getContext().then(async (context) => {
     name: spaceName
   });
   
-  if (pageId) {
+  // Only track actual pages, not spaces or other content types
+  const contentType = context.extension?.content?.type;
+  
+  if (pageId && contentType === 'page') {
     console.log('');
     console.log('%c 🎯 PAGE DETECTED - STORING TO HISTORY ', 'background: #36B37E; color: white; font-weight: bold;');
     console.log(`   📄 Page ID: ${pageId}`);

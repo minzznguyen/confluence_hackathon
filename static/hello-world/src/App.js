@@ -3,7 +3,7 @@ import { view } from "@forge/bridge";
 import { navigateToFullPage } from "./utils/navigation";
 import { loadPage } from "./utils/pageLoader";
 import { loadPageForSpacePage } from "./utils/spacePageLoader";
-import "./App.css";
+import "./index.css";
 
 export default function App() {
   const [page, setPage] = useState(null);
@@ -11,7 +11,6 @@ export default function App() {
   const [error, setError] = useState(null);
   const [isNavigating, setIsNavigating] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [moduleType, setModuleType] = useState(null);
 
   /**
    * Load page data based on module type.
@@ -23,7 +22,6 @@ export default function App() {
     try {
       const context = await view.getContext();
       const type = context.extension?.type;
-      setModuleType(type);
 
       // Handle navigation modules (byline/content action) - opens full page in new tab
       if (type === 'confluence:contentBylineItem' || 
@@ -58,26 +56,15 @@ export default function App() {
     loadPageData();
   }, [loadPageData]);
 
-  if (isNavigating) return <p className="loading-message">Navigating...</p>;
-  if (error) return <p className="error-message">Error: {error}</p>;
-  if (isLoading || !page) return <p className="loading-message">Loading page…</p>;
+  if (isNavigating) return <div className="conf-container">Navigating...</div>;
+  if (error) return <div className="conf-container">❌ {error}</div>;
+  if (isLoading || !page) return <div className="conf-container">Loading…</div>;
 
   return (
-    <div className="page-container">
-      {moduleType === 'confluence:spacePage' && (
-        <button 
-          className="refresh-button"
-          onClick={() => loadPageData()}
-          title="Refresh to load the most recently viewed page"
-        >
-          🔄 Refresh
-        </button>
-      )}
-
-      <h1 className="page-title">{page.title}</h1>
-
+    <div className="conf-container">
+      <h1 className="conf-title">{page.title}</h1>
       <div
-        className="confluence-body"
+        className="conf-body"
         dangerouslySetInnerHTML={{ __html: html }}
       />
     </div>
