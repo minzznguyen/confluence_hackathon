@@ -60,23 +60,23 @@ export default function App() {
   useEffect(() => {
     if (!html) return;
 
-    // Highlight all block elements that contain inline comments
-    function highlightCommentedBlocks() {
+    // Mark block elements that contain inline comments with a visual indicator
+    function markCommentedBlocks() {
       const commentSpans = document.querySelectorAll('.conf-inline-comment');
       
       commentSpans.forEach(span => {
         // Find the closest block-level parent (p, div, li, h1-h6, td, th, etc.)
-        let parent = span.closest('p, div, li, h1, h2, h3, h4, h5, h6, td, th, blockquote, pre');
+        let parent = span.closest('p, div, li, h1, h2, h3, h4, h5, h6, td, th, blockquote, pre, section, article, dt, dd, figcaption, figure');
         
-        // Add class to highlight the entire block containing a comment
-        if (parent && !parent.classList.contains('conf-line-with-comment')) {
-          parent.classList.add('conf-line-with-comment');
+        // Add class to mark the block as containing a comment (visual indicator only)
+        if (parent && !parent.classList.contains('conf-has-comment')) {
+          parent.classList.add('conf-has-comment');
         }
       });
     }
 
-    // Small delay to ensure DOM is fully rendered before highlighting
-    setTimeout(highlightCommentedBlocks, 10);
+    // Small delay to ensure DOM is fully rendered before marking blocks
+    setTimeout(markCommentedBlocks, 10);
   }, [html]);
 
   if (error) return <div className="conf-error">❌ {error}</div>;

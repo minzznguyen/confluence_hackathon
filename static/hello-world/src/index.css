@@ -71,10 +71,18 @@
   margin: 30px 0;
 }
 
-/* Full line/block containing inline comments */
-.conf-line-with-comment {
-  background-color: #ffebe6; /* Light red background for the entire line/block */
-  border-left: 4px solid #de350b; /* Red border for emphasis */
+/* Block containing inline comments - visual indicator only */
+.conf-has-comment {
+  position: relative;
+  border-left: 4px solid #de350b; /* Red border indicator */
   padding-left: 12px; /* Add some padding to offset from the border */
   margin-left: -12px; /* Compensate for the padding to maintain alignment */
+}
+
+/* The actual commented text - highlighted */
+.conf-inline-comment {
+  background-color: #ffebe6; /* Light red background */
+  padding: 2px 4px;
+  border-radius: 3px;
+  color: inherit; /* Use normal text color */
 }
