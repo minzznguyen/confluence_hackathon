@@ -10,7 +10,7 @@ export function wrapInlineCommentMarkers(html) {
 }
 
 // Convert only images; DO NOT touch inline styling
-function convertImages(html, pageId) {
+export function convertImages(html, pageId) {
   if (!html) return "";
 
   return html.replace(/<ac:image[^>]*>([\s\S]*?)<\/ac:image>/g, (_, inner) => {
