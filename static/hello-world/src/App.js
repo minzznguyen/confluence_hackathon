@@ -3,8 +3,6 @@ import { getPageInfo } from "./api";
 import { wrapInlineCommentMarkers, convertImages } from "./utils/helper";
 import "./index.css";
 
-const BASE_URL = "https://atlassianhackathon2025.atlassian.net";
-
 export default function App() {
   const [page, setPage] = useState(null);
   const [html, setHtml] = useState("");

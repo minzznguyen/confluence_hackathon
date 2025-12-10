@@ -1,3 +1,5 @@
+const BASE_URL = "https://atlassianhackathon2025.atlassian.net";
+
 // Convert Confluence inline comment markers to spans for DOM manipulation.
 // Confluence stores commented regions in <ac:inline-comment-marker> tags in the storage format.
 export function wrapInlineCommentMarkers(html) {
