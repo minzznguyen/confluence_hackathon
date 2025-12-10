@@ -34,13 +34,6 @@ modules:
       resolver:
         function: resolver
   
-  confluence:globalSettings:
-    - key: heatmap-global-settings
-      title: Heatmap Analytics Dashboard
-      resource: main
-      resolver:
-        function: resolver
-  
   confluence:backgroundScript:
     - key: page-tracker
       resource: page-tracker
