@@ -48,6 +48,8 @@ resolver.define('setCurrentPageId', async (req) => {
  * 
  * The space page module calls this to get the last tracked page ID
  * so it can display analytics for that page.
+ * 
+ * Also returns the site URL from the backend context context as a reliable source of truth.
  */
 resolver.define('getCurrentPageId', async (req) => {
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
@@ -56,11 +58,15 @@ resolver.define('getCurrentPageId', async (req) => {
   const pageId = await storage.get('currentPageId');
   const pageInfo = await storage.get('currentPageInfo');
   
+  // Get site URL from backend context (Reliable Source of Truth)
+  const siteUrl = req.context?.siteUrl || '';
+
   console.log(`   Retrieved pageId: ${pageId || '(none stored)'}`);
   console.log(`   Page info:`, pageInfo ? JSON.stringify(pageInfo) : '(none stored)');
+  console.log(`   Site URL: ${siteUrl}`);
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   
-  return { pageId, pageInfo };
+  return { pageId, pageInfo, siteUrl };
 });
 
 export const handler = resolver.getDefinitions();

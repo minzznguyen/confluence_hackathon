@@ -1,4 +1,4 @@
-import { router, invoke } from "@forge/bridge";
+import { router } from "@forge/bridge";
 
 /**
  * Handles navigation from byline or content action modules to the full page analytics view.
@@ -6,8 +6,7 @@ import { router, invoke } from "@forge/bridge";
  * This function:
  * 1. Extracts the current page context (pageId, spaceId, spaceKey)
  * 2. Constructs the full Forge app URL with query parameters
- * 3. Stores the pageId in Forge storage for fallback access
- * 4. Opens the full page in a new tab
+ * 3. Opens the full page in a new tab
  * 
  * @param {Object} context - The Forge context object from view.getContext()
  * @returns {Promise<void>}
@@ -44,13 +43,6 @@ export async function navigateToFullPage(context) {
   // Construct full Forge URL
   const fullUrl = `/forge-apps/a/${appId}/e/${envId}/r/hello-world${params.toString() ? `?${params.toString()}` : ''}`;
   
-  // Store pageId in Forge storage as a fallback mechanism
-  // (in case URL parameters are not accessible in the full page module)
-  if (pageId) {
-    await invoke('setCurrentPageId', { pageId });
-  }
-  
   // Open full page in new tab
   router.open(fullUrl);
 }
-
