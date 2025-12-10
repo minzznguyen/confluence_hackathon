@@ -1,41 +1,94 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { view } from "@forge/bridge";
 import { navigateToFullPage } from "./utils/navigation";
 import { loadPage } from "./utils/pageLoader";
+import { loadPageForSpacePage } from "./utils/spacePageLoader";
+// Import external CSS - Forge CSP blocks inline styles
+import "./App.css";
 
 export default function App() {
   const [page, setPage] = useState(null);
   const [html, setHtml] = useState("");
   const [error, setError] = useState(null);
+  const [isNavigating, setIsNavigating] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [moduleType, setModuleType] = useState(null);
 
-  useEffect(() => {
-    // Handle navigation for byline/content action modules
-    view.getContext().then(async (context) => {
-      await navigateToFullPage(context);
-    }).catch((err) => {
-      console.error('Failed to get context:', err);
-    });
+  /**
+   * Load page data based on module type.
+   * This is extracted as a callback so it can be called on mount AND on refresh.
+   */
+  const loadPageData = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const context = await view.getContext();
+      const type = context.extension?.type;
+      setModuleType(type);
 
-    // Load page data for full page module
-    async function load() {
-      try {
-        const { page: loadedPage, html: convertedHtml } = await loadPage();
+      console.log('%c 🔄 APP: Loading page data... ', 'background: #0052CC; color: white;');
+      console.log(`   Module type: ${type}`);
+
+      // Handle navigation modules (byline/content action) - opens full page in new tab
+      if (type === 'confluence:contentBylineItem' || 
+          type === 'confluence:contentAction') {
+        setIsNavigating(true);
+        await navigateToFullPage(context);
+        return; // Stop here, navigation will open new tab
+      }
+
+      // Handle space page - ALWAYS fetch fresh from storage
+      // This ensures we show the most recently tracked page
+      if (type === 'confluence:spacePage') {
+        console.log('%c 📍 SPACE PAGE: Fetching fresh data from storage ', 'background: #6554C0; color: white;');
+        const { page: loadedPage, html: convertedHtml } = await loadPageForSpacePage(context);
         setPage(loadedPage);
         setHtml(convertedHtml);
-      } catch (err) {
-        console.error(err);
-        setError(err.message);
+        setIsLoading(false);
+        return;
       }
+
+      // Handle full page and global settings - normal load
+      const { page: loadedPage, html: convertedHtml } = await loadPage();
+      setPage(loadedPage);
+      setHtml(convertedHtml);
+      setIsLoading(false);
+      
+    } catch (err) {
+      console.error(err);
+      setError(err.message);
+      setIsLoading(false);
     }
+  }, []);
 
-    load();
-  }, [window.location.href]); // Re-run when URL changes to load new page data
+  // Run on initial mount - empty dependency array ensures fresh load every time
+  // the iframe is created (which happens when navigating to the space page)
+  useEffect(() => {
+    console.log('%c 🚀 APP: Component mounted - initializing... ', 'background: #00875A; color: white;');
+    loadPageData();
+  }, [loadPageData]);
 
+  // Show "Navigating..." while byline/content action opens new tab
+  if (isNavigating) return <p className="loading-message">Navigating...</p>;
   if (error) return <p className="error-message">Error: {error}</p>;
-  if (!page) return <p className="loading-message">Loading page…</p>;
+  if (isLoading || !page) return <p className="loading-message">Loading page…</p>;
 
   return (
     <div className="page-container">
+      {/* Refresh button for space page - allows manual refresh to get latest tracked page */}
+      {moduleType === 'confluence:spacePage' && (
+        <button 
+          className="refresh-button"
+          onClick={() => {
+            console.log('%c 🔄 USER: Manual refresh requested ', 'background: #FFAB00; color: black;');
+            loadPageData();
+          }}
+          title="Refresh to load the most recently viewed page"
+        >
+          🔄 Refresh
+        </button>
+      )}
 
       {/* Title */}
       <h1 className="page-title">{page.title}</h1>
@@ -45,47 +98,6 @@ export default function App() {
         className="confluence-body"
         dangerouslySetInnerHTML={{ __html: html }}
       />
-
-      <style>{`
-        .error-message,
-        .loading-message {
-          padding: 20px;
-        }
-
-        .page-container {
-          max-width: 820px;
-          margin: 0 auto;
-          padding: 40px 24px;
-          font-family: Inter, Arial, sans-serif;
-          line-height: 1.6;
-          color: #172B4D;
-        }
-
-        .page-title {
-          font-size: 32px;
-          margin-bottom: 8px;
-        }
-
-        .confluence-body {
-          font-size: 16px;
-        }
-
-        .confluence-body h1 {
-          font-size: 26px;
-          margin-top: 42px;
-          margin-bottom: 12px;
-          font-weight: 700;
-        }
-
-        .confluence-body p {
-          margin-bottom: 16px;
-        }
-
-        .confluence-body img {
-          border-radius: 8px;
-          max-width: 100%;
-        }
-      `}</style>
     </div>
   );
 }

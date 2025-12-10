@@ -41,12 +41,20 @@ modules:
       resolver:
         function: resolver
   
+  confluence:backgroundScript:
+    - key: page-tracker
+      resource: page-tracker
+      resolver:
+        function: resolver
+  
   function:
     - key: resolver
       handler: index.handler
 resources:
   - key: main
     path: static/hello-world/build
+  - key: page-tracker
+    path: static/page-tracker/build
 app:
   runtime:
     name: nodejs22.x

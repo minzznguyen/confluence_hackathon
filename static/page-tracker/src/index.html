@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page Tracker</title>
+    <script src="https://connect-cdn.atl-paas.net/all.js" defer></script>
+</head>
+<body>
+    <!-- Background script runs silently - no visible UI -->
+    <script type="module">
+      import { view, invoke } from 'https://cdn.jsdelivr.net/npm/@forge/bridge@3/+esm';
+      
+      // Background Script - Page Tracker
+      // This runs automatically on EVERY Confluence page view
+      
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.log('📍 PAGE TRACKER: Background script starting');
+      
+      // Get the current page context
+      view.getContext().then(async (context) => {
+        console.log('📍 PAGE TRACKER: Got context');
+        console.log('Context type:', context.extension?.type);
+        console.log('Content:', context.extension?.content);
+        
+        // Extract page ID from the current page context
+        const pageId = context.extension?.content?.id;
+        const spaceId = context.extension?.space?.id;
+        const spaceKey = context.extension?.space?.key;
+        
+        if (pageId) {
+          console.log('📍 PAGE TRACKER: Detected page view');
+          console.log('  Page ID:', pageId);
+          console.log('  Space ID:', spaceId);
+          console.log('  Space Key:', spaceKey);
+          
+          try {
+            // Store the current page ID in Forge storage
+            await invoke('setCurrentPageId', { 
+              pageId, 
+              spaceId, 
+              spaceKey 
+            });
+            
+            console.log('✅ PAGE TRACKER: Successfully stored pageId:', pageId);
+          } catch (error) {
+            console.error('❌ PAGE TRACKER: Failed to store pageId:', error);
+          }
+        } else {
+          console.log('⚠️ PAGE TRACKER: No pageId in context (might be space page or other module)');
+        }
+        
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      }).catch((error) => {
+        console.error('❌ PAGE TRACKER: Failed to get context:', error);
+      });
+    </script>
+</body>
+</html>
+

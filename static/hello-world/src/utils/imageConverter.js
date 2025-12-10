@@ -24,15 +24,8 @@ export function convertConfluenceImages(html, pageId, baseUrl) {
       // Construct the attachment download URL
       const imgUrl = `${baseUrl}/wiki/download/attachments/${pageId}/${filename}?api=v2`;
 
-      return `
-        <img 
-          src="${imgUrl}" 
-          style="max-width: 100%; 
-                 border-radius: 8px; 
-                 margin: 24px 0;
-                 display: block;"
-        />
-      `;
+      // Use CSS class instead of inline styles (Forge CSP blocks inline styles)
+      return `<img src="${imgUrl}" class="confluence-image" alt="${filename}" />`;
     })
     // Remove inline comment markers (they're not visible in rendered view)
     .replace(/<ac:inline-comment-marker[^>]*>.*?<\/ac:inline-comment-marker>/g, "");
