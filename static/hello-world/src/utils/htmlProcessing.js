@@ -3,7 +3,7 @@
  * Transforms Confluence storage format into renderable HTML.
  */
 
-import { API_ENDPOINTS } from '../config';
+import { API_ENDPOINTS } from '../constants';
 
 /**
  * Converts <ac:inline-comment-marker> tags to styled <span> elements.

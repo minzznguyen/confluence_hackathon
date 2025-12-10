@@ -4,14 +4,14 @@
  */
 
 import { requestConfluence } from "@forge/bridge";
-import { PAGE_ID, API_ENDPOINTS } from "../config";
+import { DEMO_PAGE_ID, API_ENDPOINTS } from "../constants";
 
 /**
  * Fetches page data including content in storage format.
  * @returns {Promise<Object>} Page object with id, title, body.storage.value, etc.
  */
 export async function getPageInfo() {
-  const url = API_ENDPOINTS.PAGE(PAGE_ID);
+  const url = API_ENDPOINTS.PAGE(DEMO_PAGE_ID);
 
   const response = await requestConfluence(url, {
     headers: { Accept: "application/json" }
@@ -40,7 +40,7 @@ export async function getInlineComments() {
   }
 
   const data = await response.json();
-  return data.results.filter((comment) => comment.pageId === PAGE_ID);
+  return data.results.filter((comment) => comment.pageId === DEMO_PAGE_ID);
 }
 
 /**

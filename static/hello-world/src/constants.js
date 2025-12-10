@@ -1,13 +1,13 @@
 /**
- * Application Configuration
+ * Application Constants
  * Centralizes constants to avoid magic strings scattered across files.
  */
 
 // Base URL for the Confluence instance (used for attachment URLs)
 export const BASE_URL = "https://atlassianhackathon2025.atlassian.net";
 
-// Target page ID - hardcoded for demo, should be dynamic in production
-export const PAGE_ID = "622593";
+// Demo page ID - hardcoded for demo, should be dynamic in production
+export const DEMO_PAGE_ID = "622593";
 
 // API endpoint builders
 export const API_ENDPOINTS = {
@@ -16,3 +16,4 @@ export const API_ENDPOINTS = {
   USER: (accountId) => `/wiki/rest/api/user?accountId=${encodeURIComponent(accountId)}`,
   ATTACHMENT: (pageId, filename) => `${BASE_URL}/wiki/download/attachments/${pageId}/${filename}?api=v2`,
 };
+
