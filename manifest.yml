@@ -21,3 +21,5 @@ permissions:
   scopes:
     - read:confluence-user
     - read:page:confluence
+    - read:comment:confluence
+    - read:confluence-content.all
