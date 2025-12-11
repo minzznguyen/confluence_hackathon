@@ -8,10 +8,11 @@ import { DEMO_PAGE_ID, API_ENDPOINTS } from "../constants";
 
 /**
  * Fetches page data including content in storage format.
+ * @param {string} pageId - Optional page ID, defaults to DEMO_PAGE_ID
  * @returns {Promise<Object>} Page object with id, title, body.storage.value, etc.
  */
-export async function getPageInfo() {
-  const url = API_ENDPOINTS.PAGE(DEMO_PAGE_ID);
+export async function getPageInfo(pageId = DEMO_PAGE_ID) {
+  const url = API_ENDPOINTS.PAGE(pageId);
 
   const response = await requestConfluence(url, {
     headers: { Accept: "application/json" }

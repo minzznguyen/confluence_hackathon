@@ -1,4 +1,4 @@
-import { getPageInfo } from "../api";
+import { getPageInfo } from "../api/confluence";
 import { convertConfluenceImages } from "./imageConverter";
 import { getPageContext } from "./contextUtils";
 
