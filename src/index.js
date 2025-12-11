@@ -1,3 +1,8 @@
+/**
+ * Forge Backend Resolver
+ * Defines serverless functions invokable from the frontend via @forge/bridge.
+ */
+
 import Resolver from '@forge/resolver';
 import { storage } from '@forge/api';
 
