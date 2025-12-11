@@ -2,7 +2,6 @@ import { useEffect, useState, useCallback } from "react";
 import { view } from "@forge/bridge";
 import { navigateToFullPage } from "./utils/navigation";
 import { loadPage } from "./utils/pageLoader";
-import { loadPageForSpacePage } from "./utils/spacePageLoader";
 import "./index.css";
 
 export default function App() {
@@ -23,24 +22,15 @@ export default function App() {
       const context = await view.getContext();
       const type = context.extension?.type;
 
-      // Handle navigation modules (byline/content action) - opens full page in new tab
+      // Handle navigation modules (byline/content action) - navigate and close immediately
       if (type === 'confluence:contentBylineItem' || 
           type === 'confluence:contentAction') {
-        setIsNavigating(true);
         await navigateToFullPage(context);
+        view.close(); // Close the modal immediately after navigation
         return;
       }
 
-      // Handle space page
-      if (type === 'confluence:spacePage') {
-        const { page: loadedPage, html: convertedHtml } = await loadPageForSpacePage(context);
-        setPage(loadedPage);
-        setHtml(convertedHtml);
-        setIsLoading(false);
-        return;
-      }
-
-      // Handle full page and global settings
+      // Handle full page
       const { page: loadedPage, html: convertedHtml } = await loadPage();
       setPage(loadedPage);
       setHtml(convertedHtml);

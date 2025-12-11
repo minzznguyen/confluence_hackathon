@@ -15,8 +15,7 @@ modules:
       resource: main
       resolver:
         function: resolver
-      viewportSize: small
-      viewportContainer: popup
+      viewportContainer: modal
   
   confluence:contentAction:
     - key: heatmap-content-action
@@ -24,15 +23,7 @@ modules:
       resource: main
       resolver:
         function: resolver
-      viewportSize: small
-  
-  confluence:spacePage:
-    - key: heatmap-space-page
-      title: Heatmap Analytics
-      route: heatmap-space
-      resource: main
-      resolver:
-        function: resolver
+      viewportContainer: modal
   
   confluence:backgroundScript:
     - key: page-tracker
