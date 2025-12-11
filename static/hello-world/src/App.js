@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { view } from "@forge/bridge";
 import { navigateToFullPage } from "./utils/navigation";
 import { loadPage } from "./utils/pageLoader";
-import "./index.css";
+import "./styles/index.css";
 
 export default function App() {
   const [page, setPage] = useState(null);
