@@ -12,7 +12,7 @@ export const DEMO_PAGE_ID = "622593";
 // API endpoint builders
 export const API_ENDPOINTS = {
   PAGE: (pageId) => `/wiki/api/v2/pages/${pageId}?body-format=storage`,
-  INLINE_COMMENTS: `/wiki/api/v2/inline-comments?body-format=atlas_doc_format&status=current`,
+  INLINE_COMMENTS: `/wiki/api/v2/inline-comments?body-format=atlas_doc_format&status=current&resolution-status=open`,
   USER: (accountId) => `/wiki/rest/api/user?accountId=${encodeURIComponent(accountId)}`,
   ATTACHMENT: (pageId, filename) => `${BASE_URL}/wiki/download/attachments/${pageId}/${filename}?api=v2`,
 };
