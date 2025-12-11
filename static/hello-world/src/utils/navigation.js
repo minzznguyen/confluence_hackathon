@@ -1,7 +1,7 @@
 import { router } from "@forge/bridge";
 
 /**
- * Handles navigation from byline or content action modules to the full page analytics view.
+ * Handles navigation from byline item to the full page analytics view.
  * 
  * This function:
  * 1. Extracts the current page context (pageId, spaceId, spaceKey)
@@ -14,8 +14,8 @@ import { router } from "@forge/bridge";
 export async function navigateToFullPage(context) {
   const moduleType = context.extension?.type;
   
-  // Only handle byline and content action modules
-  if (moduleType !== 'confluence:contentBylineItem' && moduleType !== 'confluence:contentAction') {
+  // Only handle byline item module
+  if (moduleType !== 'confluence:contentBylineItem') {
     return;
   }
 

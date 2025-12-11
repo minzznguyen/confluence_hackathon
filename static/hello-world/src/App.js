@@ -22,9 +22,8 @@ export default function App() {
       const context = await view.getContext();
       const type = context.extension?.type;
 
-      // Handle navigation modules (byline/content action) - navigate and close immediately
-      if (type === 'confluence:contentBylineItem' || 
-          type === 'confluence:contentAction') {
+      // Handle byline item - navigate and close immediately
+      if (type === 'confluence:contentBylineItem') {
         await navigateToFullPage(context);
         view.close(); // Close the modal immediately after navigation
         return;

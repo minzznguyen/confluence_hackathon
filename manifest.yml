@@ -17,14 +17,6 @@ modules:
         function: resolver
       viewportContainer: modal
   
-  confluence:contentAction:
-    - key: heatmap-content-action
-      title: View Heatmap Analytics
-      resource: main
-      resolver:
-        function: resolver
-      viewportContainer: modal
-  
   function:
     - key: resolver
       handler: index.handler
