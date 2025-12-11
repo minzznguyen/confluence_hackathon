@@ -12,8 +12,8 @@ export function wrapInlineCommentMarkers(html) {
   if (!html) return "";
 
   return html.replace(
-    /<ac:inline-comment-marker\b[^>]*>([\s\S]*?)<\/ac:inline-comment-marker>/g,
-    '<span class="conf-inline-comment">$1</span>'
+    /<ac:inline-comment-marker\b[^>]*ac:ref="([^"]+)"[^>]*>([\s\S]*?)<\/ac:inline-comment-marker>/g,
+    '<span class="conf-inline-comment" data-ref="$1">$2</span>'
   );
 }
 

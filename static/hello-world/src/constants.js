@@ -17,3 +17,5 @@ export const API_ENDPOINTS = {
   ATTACHMENT: (pageId, filename) => `${BASE_URL}/wiki/download/attachments/${pageId}/${filename}?api=v2`,
 };
 
+export const DEFAULT_AVATAR = "/default-avatar.png"
+

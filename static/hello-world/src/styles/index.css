@@ -83,6 +83,12 @@
   padding: 2px 4px;
   border-radius: 3px;
   color: inherit;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.conf-inline-comment:hover {
+  background-color: rgba(255, 255, 0, 0.45);
 }
 
 /* States */
@@ -98,4 +104,63 @@
   padding: 40px;
   color: #de350b;
   font-size: 16px;
+}
+
+/* Comment popup panel */
+.conf-comment-popup {
+  position: absolute;   /* Moves with scroll + anchors to parent */
+  z-index: 9999;
+  z-index: 9999;
+  width: 360px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  padding: 16px;
+}
+
+/* Avatar + Name + Date */
+.conf-comment-header {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+/* Avatar styling */
+.conf-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+}
+
+.conf-comment-author {
+  font-weight: 600;
+}
+
+.conf-comment-date {
+  font-size: 12px;
+  color: #666;
+}
+
+/* Comment text */
+.conf-comment-body {
+  margin-top: 6px;
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+/* Close button */
+.conf-popup-close:hover {
+  opacity: 1;
+}
+
+.conf-popup-close {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  cursor: pointer;
+  opacity: 0.6;
 }
