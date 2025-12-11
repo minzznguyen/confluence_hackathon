@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { view } from "@forge/bridge";
 import { navigateToFullPage } from "./utils/navigation";
 import { loadPage } from "./utils/pageLoader";
+import { markCommentedBlocks } from "./utils/htmlProcessing";
 import "./styles/index.css";
 
 export default function App() {
@@ -44,6 +45,13 @@ export default function App() {
   useEffect(() => {
     loadPageData();
   }, [loadPageData]);
+
+  // After HTML renders, mark blocks that contain inline comments
+  useEffect(() => {
+    if (!html) return;
+    const timeoutId = setTimeout(markCommentedBlocks, 10);
+    return () => clearTimeout(timeoutId);
+  }, [html]);
 
   if (isNavigating) return <div className="conf-container">Navigating...</div>;
   if (error) return <div className="conf-container">❌ {error}</div>;

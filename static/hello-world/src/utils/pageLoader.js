@@ -1,5 +1,5 @@
 import { getPageInfo } from "../api/confluence";
-import { convertConfluenceImages } from "./imageConverter";
+import { processConfluenceHtml } from "./htmlProcessing";
 import { getPageContext } from "./contextUtils";
 
 /**
@@ -21,12 +21,8 @@ export async function loadPage() {
   // Fetch page info using the page ID from storage
   const page = await getPageInfo(pageId);
 
-  // Convert Confluence storage-format HTML to standard HTML
-  const html = convertConfluenceImages(
-    page.body.storage.value,
-    page.id,
-    baseUrl
-  );
+  // Convert Confluence storage-format HTML to standard HTML with inline comment highlighting
+  const html = processConfluenceHtml(page.body.storage.value, page.id, baseUrl);
 
   return {
     page,

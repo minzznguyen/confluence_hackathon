@@ -20,7 +20,7 @@ export function wrapInlineCommentMarkers(html) {
 /**
  * Converts <ac:image> macros to standard <img> tags with attachment URLs.
  */
-export function convertImages(html, pageId) {
+export function convertImages(html, pageId, baseUrl) {
   if (!html) return "";
 
   return html.replace(/<ac:image[^>]*>([\s\S]*?)<\/ac:image>/g, (fullMatch, innerContent) => {
@@ -28,7 +28,7 @@ export function convertImages(html, pageId) {
     if (!filenameMatch) return "";
 
     const filename = filenameMatch[1];
-    const imageUrl = API_ENDPOINTS.ATTACHMENT(pageId, filename);
+    const imageUrl = API_ENDPOINTS.ATTACHMENT(baseUrl, pageId, filename);
 
     return `<img src="${imageUrl}" class="conf-img" alt="${filename}" />`;
   });
@@ -38,9 +38,9 @@ export function convertImages(html, pageId) {
  * Main entry point: processes raw Confluence HTML for browser rendering.
  * Order matters: comments first, then images.
  */
-export function processConfluenceHtml(rawHtml, pageId) {
+export function processConfluenceHtml(rawHtml, pageId, baseUrl) {
   const withCommentSpans = wrapInlineCommentMarkers(rawHtml);
-  const withImages = convertImages(withCommentSpans, pageId);
+  const withImages = convertImages(withCommentSpans, pageId, baseUrl);
   return withImages;
 }
 
