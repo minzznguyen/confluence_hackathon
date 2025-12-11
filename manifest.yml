@@ -23,4 +23,4 @@ permissions:
     - read:page:confluence
     - read:comment:confluence
     - read:confluence-content.all
-    - read:content:confluence	
+    - read:content:confluence
