@@ -47,49 +47,27 @@ export async function getPageContext() {
   const context = await view.getContext();
   const baseUrl = getBaseUrl();
   
-  console.log('🔍 DEBUG: getPageContext called');
-  console.log('📍 context.location:', context.location);
-  console.log('📍 context.extension?.location:', context.extension?.location);
-  console.log('🌐 window.location.href:', window.location.href);
-  console.log('🔗 window.location.search:', window.location.search);
-  console.log('📦 Full context:', JSON.stringify(context, null, 2));
-  
   // Extract query parameters from context.extension.location
   // For fullPage modules, the location is at context.extension.location
   let pageId, spaceId, spaceKey;
   const locationUrl = context.extension?.location || context.location;
   
   if (locationUrl) {
-    console.log('✅ Found location URL:', locationUrl);
-    // Parse query string from location URL
     const queryStart = locationUrl.indexOf('?');
-    console.log('🔎 queryStart index:', queryStart);
     
     if (queryStart !== -1) {
       const queryString = locationUrl.substring(queryStart + 1);
-      console.log('📝 Query string:', queryString);
-      
       const urlParams = new URLSearchParams(queryString);
-      console.log('🗺️ URLSearchParams entries:', Array.from(urlParams.entries()));
       
       pageId = urlParams.get('pageId');
       spaceId = urlParams.get('spaceId');
       spaceKey = urlParams.get('spaceKey');
-      
-      console.log('✨ Parsed values:', { pageId, spaceId, spaceKey });
-    } else {
-      console.log('❌ No query string found in location URL');
     }
-  } else {
-    console.log('❌ No location URL found in context');
   }
   
   if (!pageId) {
-    console.error('💥 ERROR: No pageId found! Final values:', { pageId, spaceId, spaceKey });
     throw new Error('No pageId found in URL parameters. This page must be opened from a byline item.');
   }
-  
-  console.log('✅ SUCCESS: Returning pageId:', pageId);
   
   return {
     pageId,
