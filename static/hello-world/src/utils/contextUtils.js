@@ -1,14 +1,11 @@
-import { view, invoke } from "@forge/bridge";
+import { view } from "@forge/bridge";
 
 /**
  * Unified utility for extracting context information from Forge apps.
  * 
  * This module provides a single source of truth for:
  * - Base URL extraction (from _hostname_ parameter in iframe URL)
- * - Page ID extraction (from Forge storage - the only reliable source)
- * 
- * All modules (byline, space page, full page) use Forge storage to get
- * the page ID, which is populated by the background script on every page view.
+ * - Page ID extraction (from URL query parameters passed during navigation)
  */
 
 /**
@@ -35,33 +32,69 @@ export function getBaseUrl() {
 }
 
 /**
- * Gets the current page context from Forge storage.
+ * Gets the current page context from URL query parameters.
  * 
- * This is the single source of truth for page ID across all modules.
- * The background script (page-tracker) stores the current page ID
- * whenever a user views a Confluence page.
+ * The byline item passes pageId, spaceId, and spaceKey as URL parameters
+ * when navigating to the full page analytics view.
+ * 
+ * Extracts query parameters from the context.location property which contains
+ * the full Forge app URL with query string.
  * 
  * @returns {Promise<Object>} Object containing pageId, spaceId, spaceKey, baseUrl
- * @throws {Error} If no page has been tracked yet
+ * @throws {Error} If pageId is not found in URL parameters
  */
 export async function getPageContext() {
   const context = await view.getContext();
   const baseUrl = getBaseUrl();
   
-  // Get page ID from Forge storage (single source of truth)
-  const storageResult = await invoke('getCurrentPageId');
+  console.log('🔍 DEBUG: getPageContext called');
+  console.log('📍 context.location:', context.location);
+  console.log('📍 context.extension?.location:', context.extension?.location);
+  console.log('🌐 window.location.href:', window.location.href);
+  console.log('🔗 window.location.search:', window.location.search);
+  console.log('📦 Full context:', JSON.stringify(context, null, 2));
   
-  if (!storageResult?.pageId) {
-    throw new Error('No page has been tracked yet. Please view a Confluence page first.');
+  // Extract query parameters from context.extension.location
+  // For fullPage modules, the location is at context.extension.location
+  let pageId, spaceId, spaceKey;
+  const locationUrl = context.extension?.location || context.location;
+  
+  if (locationUrl) {
+    console.log('✅ Found location URL:', locationUrl);
+    // Parse query string from location URL
+    const queryStart = locationUrl.indexOf('?');
+    console.log('🔎 queryStart index:', queryStart);
+    
+    if (queryStart !== -1) {
+      const queryString = locationUrl.substring(queryStart + 1);
+      console.log('📝 Query string:', queryString);
+      
+      const urlParams = new URLSearchParams(queryString);
+      console.log('🗺️ URLSearchParams entries:', Array.from(urlParams.entries()));
+      
+      pageId = urlParams.get('pageId');
+      spaceId = urlParams.get('spaceId');
+      spaceKey = urlParams.get('spaceKey');
+      
+      console.log('✨ Parsed values:', { pageId, spaceId, spaceKey });
+    } else {
+      console.log('❌ No query string found in location URL');
+    }
+  } else {
+    console.log('❌ No location URL found in context');
   }
   
-  const pageId = storageResult.pageId;
-  const pageInfo = storageResult.pageInfo || {};
+  if (!pageId) {
+    console.error('💥 ERROR: No pageId found! Final values:', { pageId, spaceId, spaceKey });
+    throw new Error('No pageId found in URL parameters. This page must be opened from a byline item.');
+  }
+  
+  console.log('✅ SUCCESS: Returning pageId:', pageId);
   
   return {
     pageId,
-    spaceId: pageInfo.spaceId,
-    spaceKey: pageInfo.spaceKey,
+    spaceId,
+    spaceKey,
     baseUrl,
     moduleType: context.extension?.type,
     context
