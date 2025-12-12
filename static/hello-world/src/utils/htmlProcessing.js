@@ -38,7 +38,7 @@ export function convertImages(html, pageId, baseUrl) {
  * Main entry point: processes raw Confluence HTML for browser rendering.
  * Order matters: comments first, then images.
  */
-export function processConfluenceHtml(rawHtml, pageId, baseUrl) {
+export function processedHTML(rawHtml, pageId, baseUrl) {
   const withCommentSpans = wrapInlineCommentMarkers(rawHtml);
   const withImages = convertImages(withCommentSpans, pageId, baseUrl);
   return withImages;

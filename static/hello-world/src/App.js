@@ -18,7 +18,7 @@ export default function App() {
   const loadPageData = useCallback(async () => {
     setIsLoading(true);
     setError(null);
-    
+
     try {
       const context = await view.getContext();
       const type = context.extension?.type;
@@ -53,9 +53,16 @@ export default function App() {
     return () => clearTimeout(timeoutId);
   }, [html]);
 
-  if (isNavigating) return <div className="conf-container">Navigating...</div>;
-  if (error) return <div className="conf-container">❌ {error}</div>;
-  if (isLoading || !page) return <div className="conf-container">Loading…</div>;
+  // Reusable StatusMessage component for navigation, error, and loading states.
+  function StatusMessage({ message }) {
+    return (
+      <div className="conf-container">{message}</div>
+    );
+  }
+
+  if (isNavigating) return <StatusMessage message="Navigating..." />;
+  if (error) return <StatusMessage message={`❌ ${error}`} />;
+  if (isLoading || !page) return <StatusMessage message="Loading…" />;
 
   return (
     <div className="conf-container">

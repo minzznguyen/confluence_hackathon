@@ -9,8 +9,8 @@ modules:
   
   confluence:contentBylineItem:
     - key: heatmap-content-byline
-      title: Heatmap Analytics
-      tooltip: Click to view heatmap analytics dashboard
+      title: Heatmap
+      tooltip: Click to view heatmap
       icon: https://developer.atlassian.com/platform/forge/images/icons/issue.svg
       resource: main
       resolver:
