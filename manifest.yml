@@ -1,7 +1,6 @@
 modules:
   confluence:fullPage:
     - key: confluence-hackathon-full-page
-      title: Heatmap Analytics Dashboard
       resource: main
       resolver:
         function: resolver
