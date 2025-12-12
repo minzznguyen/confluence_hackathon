@@ -3,6 +3,7 @@ import { view } from "@forge/bridge";
 import { navigateToFullPage } from "./utils/navigation";
 import { loadPage } from "./utils/pageLoader";
 import { markCommentedBlocks } from "./utils/htmlProcessing";
+import { StatusMessage } from "./components/StatusMessage";
 import "./styles/index.css";
 
 export default function App() {
@@ -52,13 +53,6 @@ export default function App() {
     const timeoutId = setTimeout(markCommentedBlocks, 10);
     return () => clearTimeout(timeoutId);
   }, [html]);
-
-  // Reusable StatusMessage component for navigation, error, and loading states.
-  function StatusMessage({ message }) {
-    return (
-      <div className="conf-container">{message}</div>
-    );
-  }
 
   if (isNavigating) return <StatusMessage message="Navigating..." />;
   if (error) return <StatusMessage message={`❌ ${error}`} />;
