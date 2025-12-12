@@ -1,51 +1,68 @@
-/**
- * Main Application Component
- * Displays a Confluence page with inline comment highlighting.
- */
-
-import { useEffect, useState } from "react";
-import { getPageInfo } from "./api/confluence";
-import { processConfluenceHtml, markCommentedBlocks } from "./utils/htmlProcessing";
+import { useEffect, useState, useCallback } from "react";
+import { view } from "@forge/bridge";
+import { navigateToFullPage } from "./utils/navigation";
+import { loadPage } from "./utils/pageLoader";
+import { markCommentedBlocks } from "./utils/htmlProcessing";
 import "./styles/index.css";
 
 export default function App() {
   const [page, setPage] = useState(null);
   const [html, setHtml] = useState("");
-  const [error, setError] = useState("");
+  const [error, setError] = useState(null);
+  const [isNavigating, setIsNavigating] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Load page data on mount
-  useEffect(() => {
-    async function loadPageData() {
-      try {
-        const pageData = await getPageInfo();
-        const rawStorageHtml = pageData.body.storage.value;
-        const processedHtml = processConfluenceHtml(rawStorageHtml, pageData.id);
+  /**
+   * Load page data based on module type.
+   */
+  const loadPageData = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
 
-        setPage(pageData);
-        setHtml(processedHtml);
-      } catch (err) {
-        setError(err.message);
+    try {
+      const context = await view.getContext();
+      const type = context.extension?.type;
+
+      // Handle byline item - navigate and close immediately
+      if (type === 'confluence:contentBylineItem') {
+        await navigateToFullPage(context);
+        view.close(); // Close the modal immediately after navigation
+        return;
       }
+
+      // Handle full page
+      const { page: loadedPage, html: convertedHtml } = await loadPage();
+      setPage(loadedPage);
+      setHtml(convertedHtml);
+      setIsLoading(false);
+      
+    } catch (err) {
+      setError(err.message);
+      setIsLoading(false);
     }
-    
-    loadPageData();
   }, []);
 
-  // Mark commented blocks after HTML renders
+  useEffect(() => {
+    loadPageData();
+  }, [loadPageData]);
+
+  // After HTML renders, mark blocks that contain inline comments
   useEffect(() => {
     if (!html) return;
-
     const timeoutId = setTimeout(markCommentedBlocks, 10);
     return () => clearTimeout(timeoutId);
   }, [html]);
 
-  if (error) {
-    return <div className="conf-error">❌ {error}</div>;
+  // Reusable StatusMessage component for navigation, error, and loading states.
+  function StatusMessage({ message }) {
+    return (
+      <div className="conf-container">{message}</div>
+    );
   }
 
-  if (!page) {
-    return <div className="conf-loading">Loading…</div>;
-  }
+  if (isNavigating) return <StatusMessage message="Navigating..." />;
+  if (error) return <StatusMessage message={`❌ ${error}`} />;
+  if (isLoading || !page) return <StatusMessage message="Loading…" />;
 
   return (
     <div className="conf-container">

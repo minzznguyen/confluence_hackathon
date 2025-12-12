@@ -7,10 +7,6 @@ import Resolver from '@forge/resolver';
 
 const resolver = new Resolver();
 
-// Example resolver - remove if not needed
-resolver.define('getText', (req) => {
-  console.log('getText called:', req.context);
-  return 'Hello, world!';
-});
+// Add resolver functions here if needed in the future
 
 export const handler = resolver.getDefinitions();
