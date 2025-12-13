@@ -13,6 +13,7 @@ function buildCommentTree(comments) {
       body: comment.body,
       resolutionStatus: comment.resolutionStatus || null,
       inlineMarkerRef: comment.properties?.inlineMarkerRef || null,
+      inlineOriginalSelection: comment.properties?.inlineOriginalSelection || null,
       children: [],
     });
   }
@@ -82,7 +83,15 @@ function extractPreview(body, maxLength = 30) {
   }
 }
 
-// Gets display label for a comment node
+// Gets display label for a comment node (uses highlighted text)
 export function getCommentLabel(node, maxLength = 50) {
+  const text = node.inlineOriginalSelection;
+  if (!text || typeof text !== 'string') return '(No selection)';
+  const trimmed = text.trim();
+  return trimmed.length <= maxLength ? trimmed : trimmed.slice(0, maxLength - 1) + '…';
+}
+
+// Gets the comment body text (what the reviewer wrote)
+export function getCommentBody(node, maxLength = 50) {
   return extractPreview(node.body, maxLength);
 }

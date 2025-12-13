@@ -1,6 +1,6 @@
 import React, { useMemo, useCallback, useRef } from 'react';
 import ReactECharts from 'echarts-for-react';
-import { rankParentsByReplies, getCommentLabel } from '../utils/commentRanking';
+import { rankParentsByReplies, getCommentLabel, getCommentBody } from '../utils/commentRanking';
 import { scrollToComment } from '../utils/htmlProcessing';
 
 // Atlassian Design System colors
@@ -38,6 +38,7 @@ export default function CommentRepliesChart({
     rankedCommentsRef.current = reversed;
 
     const labels = reversed.map((node) => getCommentLabel(node, 20));
+    const tooltipLabels = reversed.map((node) => getCommentBody(node, 40));
     const data = reversed.map((node) => node.replyCount);
     const dynamicHeight = Math.max(200, topComments.length * 32 + 60);
 
@@ -46,6 +47,7 @@ export default function CommentRepliesChart({
       tooltip: {
         trigger: 'axis',
         axisPointer: { type: 'shadow' },
+        position: (point) => [point[0] + 10, point[1] - 10],
         backgroundColor: '#FFFFFF',
         borderColor: COLORS.N40,
         borderWidth: 1,
@@ -56,7 +58,8 @@ export default function CommentRepliesChart({
         },
         formatter: (params) => {
           const item = params[0];
-          return `<span style="color:${COLORS.N200}">${item.name}</span><br/><strong>${item.value}</strong> replies`;
+          const tooltip = tooltipLabels[item.dataIndex];
+          return `<span style="color:${COLORS.N200}">${tooltip}</span><br/><strong>${item.value}</strong> replies`;
         },
       },
       grid: {
