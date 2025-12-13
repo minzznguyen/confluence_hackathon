@@ -1,3 +1,5 @@
+import { COMMENT_STATUS } from '../constants';
+
 // Builds a tree structure from flat comment array
 function buildCommentTree(comments) {
   if (!comments || comments.length === 0) {
@@ -45,10 +47,10 @@ function countReplies(node) {
 export function rankParentsByReplies(comments, options = {}) {
   if (!comments?.length) return [];
 
-  const { status = 'open' } = options;
+  const { status = COMMENT_STATUS.OPEN } = options;
   const { roots } = buildCommentTree(comments);
 
-  const filtered = status === 'all' 
+  const filtered = status === COMMENT_STATUS.ALL 
     ? roots 
     : roots.filter(r => r.resolutionStatus === status);
 

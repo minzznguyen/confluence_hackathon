@@ -30,3 +30,9 @@
   flex: 1;
   min-width: 0;
 }
+
+.conf-loading-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}

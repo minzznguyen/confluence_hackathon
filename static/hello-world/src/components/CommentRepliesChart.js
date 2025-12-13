@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import ReactECharts from 'echarts-for-react';
 import { rankParentsByReplies, getCommentLabel, getCommentBody } from '../utils/commentRanking';
 import { scrollToComment } from '../utils/htmlProcessing';
+import { COMMENT_STATUS } from '../constants';
 
 // Atlassian Design System colors
 const COLORS = {
@@ -16,7 +17,7 @@ const COLORS = {
 
 export default function CommentRepliesChart({
   comments,
-  status = 'open',
+  status = COMMENT_STATUS.OPEN,
   maxItems = 10,
 }) {
   const rankedCommentsRef = useRef([]);
@@ -171,6 +172,6 @@ CommentRepliesChart.propTypes = {
 
 CommentRepliesChart.defaultProps = {
   comments: [],
-  status: 'open',
+  status: COMMENT_STATUS.OPEN,
   maxItems: 10,
 };

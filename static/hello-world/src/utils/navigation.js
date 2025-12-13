@@ -1,9 +1,9 @@
 import { router } from "@forge/bridge";
-import { APP_ID, DEVELOPMENT_ENV } from "../constants";
+import { APP_ID, DEVELOPMENT_ENV, MODULE_TYPES } from "../constants";
 
 // Navigates from byline item to full page analytics view
 export async function navigateToFullPage(context) {
-  if (context.extension?.type !== 'confluence:contentBylineItem') return;
+  if (context.extension?.type !== MODULE_TYPES.CONTENT_BYLINE_ITEM) return;
 
   const pageId = context.extension?.content?.id;
   const currentPath = context.location || window.location.href;

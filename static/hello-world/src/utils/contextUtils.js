@@ -1,9 +1,10 @@
 import { view } from "@forge/bridge";
+import { ERROR_MESSAGES } from "../constants";
 
 // Extracts Confluence base URL from iframe URL
 export function getBaseUrl() {
   const match = window.location.href.match(/\/_hostname_([^\/_?]+)/);
-  if (!match?.[1]) throw new Error('Could not extract Confluence hostname from URL.');
+  if (!match?.[1]) throw new Error(ERROR_MESSAGES.COULD_NOT_EXTRACT_HOSTNAME);
   return `https://${match[1]}`;
 }
 
@@ -24,7 +25,7 @@ export async function getPageContext() {
     }
   }
   
-  if (!pageId) throw new Error('No pageId found in URL parameters.');
+  if (!pageId) throw new Error(ERROR_MESSAGES.NO_PAGE_ID_IN_URL);
   
   return { pageId, spaceId, spaceKey, baseUrl, moduleType: context.extension?.type, context };
 }
