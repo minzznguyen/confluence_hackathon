@@ -5,7 +5,7 @@ import { rankParentsByReplies, getCommentLabel, getCommentBody } from '../utils/
 import { scrollToComment } from '../utils/htmlProcessing';
 import { COMMENT_STATUS } from '../constants';
 
-// Atlassian Design System colors
+// Atlassian Design System color palette
 const COLORS = {
   B400: '#0052CC', // Primary blue
   B300: '#0065FF',
@@ -15,11 +15,20 @@ const COLORS = {
   N40: '#DFE1E6',
 };
 
+/**
+ * Horizontal bar chart displaying comment threads ranked by reply count.
+ * Clicking a bar scrolls to the corresponding inline comment in the page.
+ * 
+ * @param {Array} comments - Array of comment objects
+ * @param {string} [status=COMMENT_STATUS.OPEN] - Filter comments by status
+ * @param {number} [maxItems=10] - Maximum number of items to display
+ */
 export default function CommentRepliesChart({
   comments,
   status = COMMENT_STATUS.OPEN,
   maxItems = 10,
 }) {
+  // Store ranked comments for click handler access
   const rankedCommentsRef = useRef([]);
 
   const chartOption = useMemo(() => {
@@ -28,6 +37,7 @@ export default function CommentRepliesChart({
       return null;
     }
 
+    // Rank comments by reply count and take top N items
     const ranked = rankParentsByReplies(comments, { status });
     const topComments = ranked.slice(0, maxItems);
 
@@ -36,12 +46,15 @@ export default function CommentRepliesChart({
       return null;
     }
 
+    // Reverse order for display (most replies at top of chart)
     const reversed = [...topComments].reverse();
     rankedCommentsRef.current = reversed;
 
+    // Prepare chart data: labels (selected text), tooltips (comment body), and values (reply counts)
     const labels = reversed.map((node) => getCommentLabel(node, 20));
     const tooltipLabels = reversed.map((node) => getCommentBody(node, 40));
     const data = reversed.map((node) => node.replyCount);
+    // Dynamic height based on number of items (32px per item + padding)
     const dynamicHeight = Math.max(200, topComments.length * 32 + 60);
 
     return {
@@ -129,6 +142,7 @@ export default function CommentRepliesChart({
 
   const chartHeight = chartOption?.height || 200;
 
+  // Handle bar clicks to scroll to corresponding comment in page
   const onChartClick = useCallback((params) => {
     if (params.componentType === 'series') {
       const comment = rankedCommentsRef.current[params.dataIndex];
@@ -166,7 +180,7 @@ CommentRepliesChart.propTypes = {
     resolutionStatus: PropTypes.string,
     properties: PropTypes.object,
   })),
-  status: PropTypes.oneOf(['open', 'resolved', 'all']),
+  status: PropTypes.oneOf(['open']),
   maxItems: PropTypes.number,
 };
 

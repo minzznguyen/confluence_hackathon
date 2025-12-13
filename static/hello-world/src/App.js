@@ -5,15 +5,15 @@ import CommentRepliesChart from "./components/CommentRepliesChart";
 import Heading from "@atlaskit/heading";
 import InlineMessage from "@atlaskit/inline-message";
 import Spinner from "@atlaskit/spinner";
-import { COMMENT_STATUS } from "./constants";
+import { COMMENT_STATUS, UI_LABELS } from "./constants";
 
 export default function App() {
   const { page, html, comments, error, isLoading } = usePageData();
 
-  // After HTML renders, mark blocks that contain inline comments
+  // Mark block elements containing inline comments after HTML renders
+  // Uses requestAnimationFrame to ensure DOM is ready before querying elements
   useEffect(() => {
     if (!html || isLoading) return;
-    // Use requestAnimationFrame for better performance than setTimeout
     const rafId = requestAnimationFrame(() => {
       markCommentedBlocks();
     });
@@ -44,7 +44,6 @@ export default function App() {
 
   return (
     <div className="conf-page-wrapper">
-      {/* Left Sidebar - Chart */}
       <aside className="conf-sidebar">
         <div className="conf-chart-section">
           <Heading as="h2">Comment Thread Activity</Heading>
@@ -56,10 +55,9 @@ export default function App() {
         </div>
       </aside>
 
-      {/* Main Content */}
       <main className="conf-main">
         <div className="conf-container">
-          <Heading as="h1" size="xlarge">{page?.title || 'Untitled Page'}</Heading>
+          <Heading as="h1" size="xlarge">{page?.title || UI_LABELS.UNTITLED_PAGE}</Heading>
           <div
             className="conf-body"
             dangerouslySetInnerHTML={{ __html: html }}

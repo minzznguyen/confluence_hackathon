@@ -2,11 +2,17 @@ import { requestConfluence } from "@forge/bridge";
 import { HTTP_HEADERS } from "../constants";
 
 /**
- * Shared API client wrapper for Confluence API requests.
- * Handles error handling and response parsing.
+ * Shared API client wrapper for Confluence API GET requests only.
+ * Centralizes error handling and JSON response parsing.
+ * 
+ * @param {string} url - Full API endpoint URL
+ * @param {string} [errorContext='API'] - Context label for error messages
+ * @returns {Promise<Object>} Parsed JSON response data
+ * @throws {Error} If request fails or response is not ok
  */
-export async function apiRequest(url, errorContext = 'API') {
+export async function getApiRequest(url, errorContext = 'API') {
   const response = await requestConfluence(url, {
+    method: 'GET',
     headers: HTTP_HEADERS.JSON
   });
 

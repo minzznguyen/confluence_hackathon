@@ -3,6 +3,17 @@ import { processedHTML } from "./htmlProcessing";
 import { getPageContext } from "./contextUtils";
 import { ERROR_MESSAGES } from "../constants";
 
+/**
+ * Loads and processes a Confluence page from the API.
+ * Extracts page context, fetches page data, validates content, and converts storage format to HTML.
+ * 
+ * @returns {Promise<Object>} Object containing:
+ *   - page: Raw page data from API
+ *   - html: Processed HTML ready for rendering
+ *   - contextInfo: {pageId, spaceId, spaceKey}
+ *   - baseUrl: Confluence instance base URL
+ * @throws {Error} If page data is missing, invalid, or loading fails
+ */
 export async function loadPage() {
   try {
     const { pageId, spaceId, spaceKey, baseUrl } = await getPageContext();

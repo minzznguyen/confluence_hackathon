@@ -2,16 +2,14 @@
 export const APP_ID = '24e34540-92df-4b82-81a2-46340f7d3440';
 export const DEVELOPMENT_ENV = '839b6a23-c454-41b1-9b1e-9468893d5204';
 
-// Module Types
-export const MODULE_TYPES = {
+// Confluence Modules
+export const CONFLUENCE_MODULES = {
   CONTENT_BYLINE_ITEM: 'confluence:contentBylineItem',
 };
 
 // Comment Status Values
 export const COMMENT_STATUS = {
   OPEN: 'open',
-  RESOLVED: 'resolved',
-  ALL: 'all',
 };
 
 // HTTP Headers
@@ -38,7 +36,12 @@ export const ERROR_MESSAGES = {
   UNEXPECTED_ERROR: 'An unexpected error occurred',
 };
 
-// API Endpoints
+// UI Labels
+export const UI_LABELS = {
+  UNTITLED_PAGE: 'Untitled Page',
+};
+
+// API Endpoints (GET requests only)
 export const API_ENDPOINTS = {
   PAGE: (pageId) => `/wiki/api/v2/pages/${pageId}?body-format=storage`,
   INLINE_COMMENTS: (pageId) =>
@@ -47,4 +50,3 @@ export const API_ENDPOINTS = {
   ATTACHMENT: (baseUrl, pageId, filename) =>
     `${baseUrl}/wiki/download/attachments/${pageId}/${filename}?api=v2`,
 };
-
