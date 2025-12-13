@@ -1,9 +1,3 @@
-/**
- * Application Constants
- * Centralizes constants to avoid magic strings scattered across files.
- */
-
-// API endpoint builders
 export const API_ENDPOINTS = {
   PAGE: (pageId) => `/wiki/api/v2/pages/${pageId}?body-format=storage`,
   INLINE_COMMENTS: (pageId) =>

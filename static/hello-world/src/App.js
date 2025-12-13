@@ -60,15 +60,8 @@ export default function App() {
     return () => clearTimeout(timeoutId);
   }, [html]);
 
-  // Reusable StatusMessage component for navigation, error, and loading states.
-  function StatusMessage({ message }) {
-    return (
-      <div className="conf-container">{message}</div>
-    );
-  }
-
-  if (error) return <StatusMessage message={`❌ ${error}`} />;
-  if (isLoading || !page) return <StatusMessage message="Loading…" />;
+  if (error) return <div className="conf-container">❌ {error}</div>;
+  if (isLoading || !page) return <div className="conf-container">Loading…</div>;
 
   return (
     <div className="conf-page-wrapper">
