@@ -5,11 +5,13 @@ import { ERROR_MESSAGES } from "../constants";
 
 /**
  * Loads and processes a Confluence page from the API.
- * Extracts page context, fetches page data, validates content, and converts storage format to HTML.
+ * Extracts page context, fetches page data and inline comments, validates content,
+ * and converts storage format to HTML with color-coded comment markers.
  *
  * @returns {Promise<Object>} Object containing:
  *   - page: Raw page data from API
  *   - html: Processed HTML ready for rendering
+ *   - comments: Array of inline comments
  *   - contextInfo: {pageId, spaceId, spaceKey}
  *   - baseUrl: Confluence instance base URL
  * @throws {Error} If page data is missing, invalid, or loading fails
@@ -31,11 +33,14 @@ export async function loadPage() {
       throw new Error(ERROR_MESSAGES.MISSING_PAGE_ID_FROM_API);
     }
 
-    const html = processedHTML(page.body.storage.value, page.id, baseUrl);
+    // Fetch comments for color ranking
+    const comments = await getInlineComments(pageId) || [];
+    const html = processedHTML(page.body.storage.value, page.id, baseUrl, comments);
 
     return {
       page,
       html,
+      comments,
       contextInfo: { pageId, spaceId, spaceKey },
       baseUrl,
     };

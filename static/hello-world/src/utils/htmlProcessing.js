@@ -41,7 +41,7 @@ export function wrapInlineCommentMarkers(html, colorMap = new Map()) {
           ? colorMap.get(inlineMarkerRef)
           : "comment-rank-0";
 
-      return `<span class="conf-inline-comment ${colorClass}" data-ref="${inlineMarkerRef || ""}">${content}</span>`;
+      return `<span class="conf-inline-comment ${colorClass}" data-marker-ref="${inlineMarkerRef || ""}">${content}</span>`;
     }
   );
 }
@@ -84,7 +84,6 @@ export function convertImages(html, pageId, baseUrl) {
 }
 
 /**
-<<<<<<< HEAD
  * Main entry point for processing Confluence storage format HTML.
  * Applies sanitization, converts comment markers, and transforms images.
  * Order matters: comments first, then images.

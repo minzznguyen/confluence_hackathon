@@ -4,6 +4,7 @@
  */
 
 import { rankParentsByReplies } from './commentRanking';
+import { COMMENT_STATUS } from '../constants';
 
 /**
  * Assigns scores (0-3) to nodes based on their position in the sorted array.
@@ -52,7 +53,7 @@ export function getInlineMarkerRefToScore(comments) {
   }
 
   // Get ranked parent comments (sorted by reply count descending)
-  const rankedParents = rankParentsByReplies(comments, { status: 'all' });
+  const rankedParents = rankParentsByReplies(comments, { status: COMMENT_STATUS.OPEN });
   
   // Calculate scores based on ranking
   const nodesWithScores = calculateScore(rankedParents);
