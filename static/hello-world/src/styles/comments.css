@@ -1,0 +1,15 @@
+/* Comments - Styles for inline comment markers (dynamically added via JS) */
+
+.conf-has-comment {
+  position: relative;
+  border-left: 4px solid var(--conf-color-border-danger);
+  padding-left: var(--conf-space-md);
+  margin-left: calc(-1 * var(--conf-space-md));
+}
+
+.conf-inline-comment {
+  background-color: var(--conf-color-background-danger);
+  padding: 2px var(--conf-space-xs);
+  border-radius: var(--conf-radius-sm);
+  color: inherit;
+}
