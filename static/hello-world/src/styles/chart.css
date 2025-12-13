@@ -1,0 +1,16 @@
+/* Chart - Styles for comment thread activity chart section */
+
+.conf-chart-section {
+  padding: var(--conf-space-md);
+  background: var(--conf-color-background);
+  border: 1px solid var(--conf-color-border);
+  border-radius: var(--conf-radius-sm);
+  box-shadow: var(--conf-shadow-sm);
+}
+
+.conf-chart-empty {
+  padding: var(--conf-space-lg);
+  text-align: center;
+  color: var(--conf-color-text-secondary);
+  font-size: var(--conf-font-size-sm);
+}

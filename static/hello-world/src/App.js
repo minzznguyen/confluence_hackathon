@@ -8,7 +8,6 @@ import CommentRepliesChart from "./components/CommentRepliesChart";
 import Heading from "@atlaskit/heading";
 import InlineMessage from "@atlaskit/inline-message";
 import Spinner from "@atlaskit/spinner";
-import "./styles/index.css";
 
 export default function App() {
   const [page, setPage] = useState(null);

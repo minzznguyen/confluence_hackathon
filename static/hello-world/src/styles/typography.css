@@ -1,0 +1,16 @@
+/* Typography - Styles for content body elements */
+.conf-body h1,
+.conf-body h2,
+.conf-body h3,
+.conf-body h4 {
+  margin-top: var(--conf-space-xl);
+  margin-bottom: var(--conf-space-md);
+  color: var(--conf-color-text);
+}
+
+.conf-body p {
+  margin: var(--conf-space-md) 0;
+  font-size: var(--conf-font-size-base);
+  line-height: var(--conf-line-height-base);
+  color: var(--conf-color-text);
+}

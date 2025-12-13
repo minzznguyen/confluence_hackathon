@@ -1,0 +1,32 @@
+/* Layout - Structural components for page wrapper, sidebar, and main content */
+.conf-container {
+  max-width: var(--conf-container-max-width);
+  margin: 0 auto;
+  padding: var(--conf-space-2xl);
+  font-family: var(--conf-font-family);
+  color: var(--conf-color-text);
+  line-height: var(--conf-line-height-base);
+  background: var(--conf-color-background);
+}
+
+.conf-page-wrapper {
+  display: flex;
+  min-height: 100vh;
+}
+
+.conf-sidebar {
+  width: var(--conf-sidebar-width);
+  flex-shrink: 0;
+  padding: var(--conf-space-2xl) var(--conf-space-lg);
+  background: var(--conf-color-background-subtle);
+  border-right: 1px solid var(--conf-color-border);
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: visible;
+}
+
+.conf-main {
+  flex: 1;
+  min-width: 0;
+}

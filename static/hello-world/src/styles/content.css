@@ -1,0 +1,38 @@
+/* Content - Styles for rendered Confluence HTML content */
+
+.conf-img {
+  max-width: 100%;
+  display: block;
+  margin: var(--conf-space-lg) auto;
+  border-radius: var(--conf-radius-md);
+  box-shadow: var(--conf-shadow-md);
+}
+
+.conf-body ul,
+.conf-body ol {
+  padding-left: var(--conf-space-xl);
+  margin-bottom: var(--conf-space-lg);
+}
+
+.conf-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: var(--conf-space-lg) 0;
+}
+
+.conf-body th,
+.conf-body td {
+  border: 1px solid var(--conf-color-border);
+  padding: var(--conf-space-sm) var(--conf-space-md);
+}
+
+.conf-body th {
+  background: var(--conf-color-background-neutral);
+  font-weight: var(--conf-font-weight-semibold);
+}
+
+.conf-body hr {
+  border: none;
+  border-top: 1px solid var(--conf-color-border);
+  margin: var(--conf-space-xl) 0;
+}
