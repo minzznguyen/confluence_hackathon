@@ -43,12 +43,12 @@
 .conf-body h2,
 .conf-body h3,
 .conf-body h4 {
-  margin-top: 32px;
-  margin-bottom: 14px;
+  margin-top: var(--ds-space-400, 32px);
+  margin-bottom: var(--ds-space-200, 14px);
 }
 
 .conf-body p {
-  margin: 12px 0;
+  margin: var(--ds-space-150, 12px) 0;
   font-size: 16px;
 }
 
@@ -64,45 +64,45 @@
 /* Lists */
 .conf-body ul,
 .conf-body ol {
-  padding-left: 30px;
-  margin-bottom: 20px;
+  padding-left: var(--ds-space-400, 30px);
+  margin-bottom: var(--ds-space-250, 20px);
 }
 
 /* Tables */
 .conf-body table {
   width: 100%;
   border-collapse: collapse;
-  margin: 22px 0;
+  margin: var(--ds-space-300, 22px) 0;
 }
 
 .conf-body th,
 .conf-body td {
-  border: 1px solid #ddd;
-  padding: 10px 12px;
+  border: 1px solid var(--ds-border, #ddd);
+  padding: var(--ds-space-100, 10px) var(--ds-space-150, 12px);
 }
 
 .conf-body th {
-  background: #f4f5f7;
+  background: var(--ds-background-neutral-subtle, #f4f5f7);
 }
 
 /* Dividers */
 .conf-body hr {
   border: none;
-  border-top: 1px solid #dfe1e6;
-  margin: 30px 0;
+  border-top: 1px solid var(--ds-border, #dfe1e6);
+  margin: var(--ds-space-400, 30px) 0;
 }
 
 /* Inline Comments - block indicator */
 .conf-has-comment {
   position: relative;
-  border-left: 4px solid #de350b;
-  padding-left: 12px;
-  margin-left: -12px;
+  border-left: 4px solid var(--ds-border-danger, #de350b);
+  padding-left: var(--ds-space-150, 12px);
+  margin-left: calc(-1 * var(--ds-space-150, 12px));
 }
 
 /* Inline Comments - text highlight */
 .conf-inline-comment {
-  background-color: #ffebe6;
+  background-color: var(--ds-background-danger, #ffebe6);
   padding: 2px 4px;
   border-radius: 3px;
   color: inherit;

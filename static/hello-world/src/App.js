@@ -5,6 +5,9 @@ import { loadPage } from "./utils/pageLoader";
 import { markCommentedBlocks } from "./utils/htmlProcessing";
 import { getInlineComments } from "./api/confluence";
 import CommentRepliesChart from "./components/CommentRepliesChart";
+import Heading from "@atlaskit/heading";
+import InlineMessage from "@atlaskit/inline-message";
+import Spinner from "@atlaskit/spinner";
 import "./styles/index.css";
 
 export default function App() {
@@ -61,15 +64,34 @@ export default function App() {
     return () => clearTimeout(timeoutId);
   }, [html, isLoading]);
 
-  if (error) return <div className="conf-container">❌ {error}</div>;
-  if (isLoading || !page) return <div className="conf-container">Loading…</div>;
+  if (error) {
+    return (
+      <div className="conf-container">
+        <InlineMessage
+          type="error"
+          title="Error loading page"
+        >
+          {error}
+        </InlineMessage>
+      </div>
+    );
+  }
+  
+  if (isLoading || !page) {
+    return (
+      <div className="conf-container" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <Spinner size="medium" />
+        <span>Loading…</span>
+      </div>
+    );
+  }
 
   return (
     <div className="conf-page-wrapper">
       {/* Left Sidebar - Chart */}
       <aside className="conf-sidebar">
         <div className="conf-chart-section">
-          <h2>Comment Thread Activity</h2>
+          <Heading as="h2">Comment Thread Activity</Heading>
           <CommentRepliesChart 
             comments={comments} 
             status="open"
@@ -81,7 +103,7 @@ export default function App() {
       {/* Main Content */}
       <main className="conf-main">
         <div className="conf-container">
-          <h1 className="conf-title">{page.title}</h1>
+          <Heading as="h1" size="xlarge">{page.title}</Heading>
           <div
             className="conf-body"
             dangerouslySetInnerHTML={{ __html: html }}
