@@ -1,4 +1,5 @@
 import React, { useMemo, useCallback, useRef } from 'react';
+import PropTypes from 'prop-types';
 import ReactECharts from 'echarts-for-react';
 import { rankParentsByReplies, getCommentLabel, getCommentBody } from '../utils/commentRanking';
 import { scrollToComment } from '../utils/htmlProcessing';
@@ -155,3 +156,21 @@ export default function CommentRepliesChart({
     />
   );
 }
+
+CommentRepliesChart.propTypes = {
+  comments: PropTypes.arrayOf(PropTypes.shape({
+    id: PropTypes.string,
+    body: PropTypes.object,
+    parentCommentId: PropTypes.string,
+    resolutionStatus: PropTypes.string,
+    properties: PropTypes.object,
+  })),
+  status: PropTypes.oneOf(['open', 'resolved', 'all']),
+  maxItems: PropTypes.number,
+};
+
+CommentRepliesChart.defaultProps = {
+  comments: [],
+  status: 'open',
+  maxItems: 10,
+};

@@ -9,8 +9,10 @@
     "@atlaskit/inline-message": "^15.4.3",
     "@atlaskit/spinner": "^19.0.7",
     "@forge/bridge": "5.10.0",
+    "dompurify": "^3.3.1",
     "echarts": "^6.0.0",
     "echarts-for-react": "^3.0.5",
+    "prop-types": "^15.8.1",
     "react": "^16",
     "react-dom": "^16"
   },
@@ -23,7 +25,15 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
+    "lint": "eslint src/",
     "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": ["react-app"],
+    "rules": {
+      "no-unused-vars": "warn",
+      "react-hooks/exhaustive-deps": "warn"
+    }
   },
   "browserslist": {
     "production": [

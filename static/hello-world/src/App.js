@@ -56,11 +56,11 @@ export default function App() {
   // After HTML renders, mark blocks that contain inline comments
   useEffect(() => {
     if (!html || isLoading) return;
-    // Wait for next frame to ensure DOM is painted
-    const timeoutId = setTimeout(() => {
+    // Use requestAnimationFrame for better performance than setTimeout
+    const rafId = requestAnimationFrame(() => {
       markCommentedBlocks();
-    }, 10);
-    return () => clearTimeout(timeoutId);
+    });
+    return () => cancelAnimationFrame(rafId);
   }, [html, isLoading]);
 
   if (error) {

@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import App from './App';
+import ErrorBoundary from './components/ErrorBoundary';
 
 // CSS Reset (must be first)
 import '@atlaskit/css-reset';
@@ -15,7 +16,9 @@ import './styles/chart.css';
 
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
   </React.StrictMode>,
   document.getElementById('root')
 );

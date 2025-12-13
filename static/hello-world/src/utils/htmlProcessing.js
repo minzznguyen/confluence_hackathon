@@ -1,4 +1,14 @@
+import DOMPurify from 'dompurify';
 import { API_ENDPOINTS } from '../constants';
+
+// Sanitizes HTML to prevent XSS attacks
+export function sanitizeHTML(html) {
+  if (!html) return "";
+  return DOMPurify.sanitize(html, {
+    ADD_TAGS: ['ac:inline-comment-marker', 'ac:image', 'ri:attachment'],
+    ADD_ATTR: ['ac:ref', 'ri:filename', 'data-marker-ref'],
+  });
+}
 
 // Converts <ac:inline-comment-marker> to <span> with data-marker-ref attribute
 export function wrapInlineCommentMarkers(html) {
@@ -39,7 +49,8 @@ export function convertImages(html, pageId, baseUrl) {
 
 // Main entry point: processes Confluence HTML for rendering
 export function processedHTML(rawHtml, pageId, baseUrl) {
-  const withCommentSpans = wrapInlineCommentMarkers(rawHtml);
+  const sanitized = sanitizeHTML(rawHtml);
+  const withCommentSpans = wrapInlineCommentMarkers(sanitized);
   const withImages = convertImages(withCommentSpans, pageId, baseUrl);
   return withImages;
 }
