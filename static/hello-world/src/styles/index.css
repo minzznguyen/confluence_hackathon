@@ -9,6 +9,29 @@
   background: white;
 }
 
+/* Full-width wrapper for two-panel layout */
+.conf-page-wrapper {
+  display: flex;
+  min-height: 100vh;
+}
+
+.conf-sidebar {
+  width: 320px;
+  flex-shrink: 0;
+  padding: 40px 24px;
+  background: #FAFBFC;
+  border-right: 1px solid #DFE1E6;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.conf-main {
+  flex: 1;
+  min-width: 0;
+}
+
 /* Typography */
 .conf-title {
   font-size: 32px;
@@ -83,6 +106,33 @@
   padding: 2px 4px;
   border-radius: 3px;
   color: inherit;
+}
+
+
+
+/* Chart Section */
+.conf-chart-section {
+  padding: 16px;
+  background: #FFFFFF;
+  border: 1px solid #DFE1E6;
+  border-radius: 3px;
+  box-shadow: 0 1px 1px rgba(9, 30, 66, 0.08);
+}
+
+.conf-chart-section h2 {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 12px 0;
+  color: #172B4D;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+}
+
+.conf-chart-empty {
+  padding: 24px;
+  text-align: center;
+  color: #6B778C;
+  font-size: 14px;
 }
 
 /* States */

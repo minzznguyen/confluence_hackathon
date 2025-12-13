@@ -3,13 +3,15 @@ import { view } from "@forge/bridge";
 import { navigateToFullPage } from "./utils/navigation";
 import { loadPage } from "./utils/pageLoader";
 import { markCommentedBlocks } from "./utils/htmlProcessing";
+import { getInlineComments } from "./api/confluence";
+import CommentRepliesChart from "./components/CommentRepliesChart";
 import "./styles/index.css";
 
 export default function App() {
   const [page, setPage] = useState(null);
   const [html, setHtml] = useState("");
+  const [comments, setComments] = useState([]);
   const [error, setError] = useState(null);
-  const [isNavigating, setIsNavigating] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   /**
@@ -31,9 +33,14 @@ export default function App() {
       }
 
       // Handle full page
-      const { page: loadedPage, html: convertedHtml } = await loadPage();
+      const { page: loadedPage, html: convertedHtml, contextInfo } = await loadPage();
       setPage(loadedPage);
       setHtml(convertedHtml);
+
+      // Fetch inline comments for the chart
+      const inlineComments = await getInlineComments(contextInfo.pageId);
+      console.log('Fetched inline comments:', inlineComments);
+      setComments(inlineComments);
       setIsLoading(false);
       
     } catch (err) {
@@ -60,17 +67,33 @@ export default function App() {
     );
   }
 
-  if (isNavigating) return <StatusMessage message="Navigating..." />;
   if (error) return <StatusMessage message={`❌ ${error}`} />;
   if (isLoading || !page) return <StatusMessage message="Loading…" />;
 
   return (
-    <div className="conf-container">
-      <h1 className="conf-title">{page.title}</h1>
-      <div
-        className="conf-body"
-        dangerouslySetInnerHTML={{ __html: html }}
-      />
+    <div className="conf-page-wrapper">
+      {/* Left Sidebar - Chart */}
+      <aside className="conf-sidebar">
+        <div className="conf-chart-section">
+          <h2>Comment Thread Activity</h2>
+          <CommentRepliesChart 
+            comments={comments} 
+            status="open"
+            maxItems={20}
+          />
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <main className="conf-main">
+        <div className="conf-container">
+          <h1 className="conf-title">{page.title}</h1>
+          <div
+            className="conf-body"
+            dangerouslySetInnerHTML={{ __html: html }}
+          />
+        </div>
+      </main>
     </div>
   );
 }

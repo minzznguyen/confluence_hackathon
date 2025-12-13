@@ -32,6 +32,7 @@ export function buildCommentTree(comments) {
       body: comment.body,
       resolutionStatus: comment.resolutionStatus || null,
       inlineOriginalSelection: comment.properties?.inlineOriginalSelection || null,
+      inlineMarkerRef: comment.properties?.inlineMarkerRef || null,
       webui: comment._links?.webui || null,
       children: [],
       replyCount: 0,
