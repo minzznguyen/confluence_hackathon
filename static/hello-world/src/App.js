@@ -53,10 +53,13 @@ export default function App() {
 
   // After HTML renders, mark blocks that contain inline comments
   useEffect(() => {
-    if (!html) return;
-    const timeoutId = setTimeout(markCommentedBlocks, 10);
+    if (!html || isLoading) return;
+    // Wait for next frame to ensure DOM is painted
+    const timeoutId = setTimeout(() => {
+      markCommentedBlocks();
+    }, 10);
     return () => clearTimeout(timeoutId);
-  }, [html]);
+  }, [html, isLoading]);
 
   if (error) return <div className="conf-container">❌ {error}</div>;
   if (isLoading || !page) return <div className="conf-container">Loading…</div>;
