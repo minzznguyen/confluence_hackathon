@@ -8,6 +8,7 @@ import "./styles/index.css";
 export default function App() {
   const [page, setPage] = useState(null);
   const [html, setHtml] = useState("");
+  const [comments, setComments] = useState([]);
   const [error, setError] = useState(null);
   const [isNavigating, setIsNavigating] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -31,9 +32,10 @@ export default function App() {
       }
 
       // Handle full page
-      const { page: loadedPage, html: convertedHtml } = await loadPage();
+      const { page: loadedPage, html: convertedHtml, comments: pageComments } = await loadPage();
       setPage(loadedPage);
       setHtml(convertedHtml);
+      setComments(pageComments || []);
       setIsLoading(false);
       
     } catch (err) {
