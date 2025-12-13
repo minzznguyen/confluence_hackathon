@@ -37,9 +37,7 @@ export default function App() {
       setPage(loadedPage);
       setHtml(convertedHtml);
 
-      // Fetch inline comments for the chart
       const inlineComments = await getInlineComments(contextInfo.pageId);
-      console.log('Fetched inline comments:', inlineComments);
       setComments(inlineComments);
       setIsLoading(false);
       

@@ -108,8 +108,6 @@
   color: inherit;
 }
 
-
-
 /* Chart Section */
 .conf-chart-section {
   padding: 16px;
@@ -133,19 +131,4 @@
   text-align: center;
   color: #6B778C;
   font-size: 14px;
-}
-
-/* States */
-.conf-loading {
-  text-align: center;
-  padding: 40px;
-  color: #6b778c;
-  font-size: 16px;
-}
-
-.conf-error {
-  text-align: center;
-  padding: 40px;
-  color: #de350b;
-  font-size: 16px;
 }
