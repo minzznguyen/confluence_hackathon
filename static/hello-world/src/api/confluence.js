@@ -36,7 +36,11 @@ export async function getInlineComments(pageId) {
   }
 
   const data = await response.json();
-  return data.results.filter((comment) => comment.pageId === pageId);
+  // Null check: ensure data.results exists and is an array
+  if (!data || !Array.isArray(data.results)) {
+    return [];
+  }
+  return data.results.filter((comment) => comment?.pageId === pageId);
 }
 
 // Fetches user profile by Atlassian account ID

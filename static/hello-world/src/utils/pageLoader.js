@@ -7,6 +7,20 @@ export async function loadPage() {
   try {
     const { pageId, spaceId, spaceKey, baseUrl } = await getPageContext();
     const page = await getPageInfo(pageId);
+    
+    // Null checks for API response structure
+    if (!page) {
+      throw new Error('Page data is missing from API response');
+    }
+    
+    if (!page.body?.storage?.value) {
+      throw new Error('Page content is missing or invalid. The page may be empty or corrupted.');
+    }
+    
+    if (!page.id) {
+      throw new Error('Page ID is missing from API response');
+    }
+    
     const html = processedHTML(page.body.storage.value, page.id, baseUrl);
 
     return {
