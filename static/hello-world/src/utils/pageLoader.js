@@ -1,54 +1,47 @@
 import { getPageInfo, getInlineComments } from "../api/confluence";
 import { processedHTML } from "./htmlProcessing";
 import { getPageContext } from "./contextUtils";
+import { ERROR_MESSAGES } from "../constants";
 
 /**
- * Loads and processes a Confluence page for display in the analytics dashboard.
- *
- * Flow:
- * 1) getPageContext pulls pageId/space info and baseUrl from the URL params
- *    (set by the byline navigation) via context.extension.location.
- * 2) getPageInfo fetches that page's content from Confluence.
- * 3) getInlineComments fetches comments for color ranking (parallel with page fetch).
- * 4) processedHTML converts storage-format HTML to renderable HTML
- *    (images + inline comment highlighting with dynamic colors).
+ * Loads and processes a Confluence page from the API.
+ * Extracts page context, fetches page data, validates content, and converts storage format to HTML.
  *
  * @returns {Promise<Object>} Object containing:
- *   - page: Raw page object from Confluence API
- *   - html: Converted HTML ready for rendering
- *   - contextInfo: Metadata about the page (pageId, spaceId, spaceKey)
- *   - baseUrl: The base URL of the Confluence site
- *   - comments: Array of inline comments for the page
- * @throws {Error} If page cannot be loaded
+ *   - page: Raw page data from API
+ *   - html: Processed HTML ready for rendering
+ *   - contextInfo: {pageId, spaceId, spaceKey}
+ *   - baseUrl: Confluence instance base URL
+ * @throws {Error} If page data is missing, invalid, or loading fails
  */
 export async function loadPage() {
   try {
-    // Get page context from URL parameters (set by byline navigation)
     const { pageId, spaceId, spaceKey, baseUrl } = await getPageContext();
-    
-    // Fetch page info and inline comments in parallel
-    const [page, comments] = await Promise.all([
-      getPageInfo(pageId),
-      getInlineComments(pageId).catch(() => []) // Gracefully handle if comments fail to load
-    ]);
+    const page = await getPageInfo(pageId);
 
-    // Convert Confluence storage-format HTML to standard HTML with ranked comment highlighting
-    const html = processedHTML(page.body.storage.value, page.id, baseUrl, comments);
+    if (!page) {
+      throw new Error(ERROR_MESSAGES.MISSING_PAGE_DATA_FROM_API);
+    }
 
-    // Return structured result with comments included
+    if (!page.body?.storage?.value) {
+      throw new Error(ERROR_MESSAGES.INVALID_PAGE_CONTENT);
+    }
+
+    if (!page.id) {
+      throw new Error(ERROR_MESSAGES.MISSING_PAGE_ID_FROM_API);
+    }
+
+    const html = processedHTML(page.body.storage.value, page.id, baseUrl);
+
     return {
       page,
       html,
-      contextInfo: {
-        pageId,
-        spaceId,
-        spaceKey
-      },
+      contextInfo: { pageId, spaceId, spaceKey },
       baseUrl,
-      comments
     };
   } catch (error) {
-    // Wrap and re-throw error with more context so handlers/logs can distinguish load errors
-    throw new Error(`Failed to load page: ${error.message || error}`);
+    throw new Error(
+      `${ERROR_MESSAGES.FAILED_TO_LOAD_PAGE}: ${error.message || error}`
+    );
   }
 }

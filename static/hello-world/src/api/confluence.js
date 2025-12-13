@@ -1,75 +1,47 @@
-/**
- * Confluence API Client
- * Uses @forge/bridge for authenticated requests within the Forge context.
- */
-
-import { requestConfluence } from "@forge/bridge";
-import { API_ENDPOINTS } from "../constants";
+import { API_ENDPOINTS, ERROR_MESSAGES } from "../constants";
+import { getApiRequest } from "./apiClient";
 
 /**
- * Fetches page data including content in storage format.
- * @param {string} pageId - Target Confluence page ID
- * @returns {Promise<Object>} Page object with id, title, body.storage.value, etc.
+ * Fetches page data from Confluence API.
+ * @param {string} pageId - Confluence page ID
+ * @returns {Promise<Object>} Page data object
  */
 export async function getPageInfo(pageId) {
   if (!pageId) {
-    throw new Error("Page ID is required to fetch page info");
+    throw new Error(ERROR_MESSAGES.MISSING_PAGE_ID);
   }
-  const url = API_ENDPOINTS.PAGE(pageId);
-
-  const response = await requestConfluence(url, {
-    headers: { Accept: "application/json" }
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Page API failed: HTTP ${response.status}\nURL: ${url}\nResponse:\n${errorText}`);
-  }
-
-  return response.json();
+  return getApiRequest(API_ENDPOINTS.PAGE(pageId), 'Page API');
 }
 
 /**
- * Fetches inline comments for the current page.
- * @param {string} pageId - Target Confluence page ID
- * @returns {Promise<Array>} Array of comment objects filtered by pageId
+ * Fetches inline comments for a page and filters by pageId.
+ * Additional filtering ensures we only return comments for the specified page.
+ * 
+ * @param {string} pageId - Confluence page ID
+ * @returns {Promise<Array>} Array of inline comment objects
  */
 export async function getInlineComments(pageId) {
   if (!pageId) {
-    throw new Error("Page ID is required to fetch inline comments");
+    throw new Error(ERROR_MESSAGES.MISSING_PAGE_ID);
   }
 
-  const response = await requestConfluence(API_ENDPOINTS.INLINE_COMMENTS(pageId), {
-    headers: { Accept: "application/json" }
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Inline comments API failed: HTTP ${response.status}\n${errorText}`);
+  const data = await getApiRequest(API_ENDPOINTS.INLINE_COMMENTS(pageId), 'Inline comments API');
+  
+  if (!data || !Array.isArray(data.results)) {
+    return [];
   }
-
-  const data = await response.json();
-  return data.results.filter((comment) => comment.pageId === pageId);
+  // Filter to ensure comments belong to the specified page (API may return related comments)
+  return data.results.filter((comment) => comment?.pageId === pageId);
 }
 
 /**
- * Fetches user profile by Atlassian account ID.
- * @param {string} accountId - The user's Atlassian account ID
- * @returns {Promise<Object>} User profile data
+ * Fetches user information from Confluence API.
+ * @param {string} accountId - User account ID
+ * @returns {Promise<Object>} User data object
  */
 export async function getUserInfo(accountId) {
   if (!accountId) {
-    throw new Error("Missing accountId");
+    throw new Error(ERROR_MESSAGES.MISSING_ACCOUNT_ID);
   }
-
-  const response = await requestConfluence(API_ENDPOINTS.USER(accountId), {
-    headers: { Accept: "application/json" }
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`User API failed: HTTP ${response.status}\n${errorText}`);
-  }
-
-  return response.json();
+  return getApiRequest(API_ENDPOINTS.USER(accountId), 'User API');
 }

@@ -1,78 +1,68 @@
-import { useEffect, useState, useCallback } from "react";
-import { view } from "@forge/bridge";
-import { navigateToFullPage } from "./utils/navigation";
-import { loadPage } from "./utils/pageLoader";
+import { useEffect } from "react";
 import { markCommentedBlocks } from "./utils/htmlProcessing";
-import "./styles/index.css";
+import { usePageData } from "./hooks/usePageData";
+import CommentRepliesChart from "./components/CommentRepliesChart";
+import Heading from "@atlaskit/heading";
+import InlineMessage from "@atlaskit/inline-message";
+import Spinner from "@atlaskit/spinner";
+import { COMMENT_STATUS, UI_LABELS } from "./constants";
 
 export default function App() {
-  const [page, setPage] = useState(null);
-  const [html, setHtml] = useState("");
-  const [comments, setComments] = useState([]);
-  const [error, setError] = useState(null);
-  const [isNavigating, setIsNavigating] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const { page, html, comments, error, isLoading } = usePageData();
 
-  /**
-   * Load page data based on module type.
-   */
-  const loadPageData = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const context = await view.getContext();
-      const type = context.extension?.type;
-
-      // Handle byline item - navigate and close immediately
-      if (type === 'confluence:contentBylineItem') {
-        await navigateToFullPage(context);
-        view.close(); // Close the modal immediately after navigation
-        return;
-      }
-
-      // Handle full page
-      const { page: loadedPage, html: convertedHtml, comments: pageComments } = await loadPage();
-      setPage(loadedPage);
-      setHtml(convertedHtml);
-      setComments(pageComments || []);
-      setIsLoading(false);
-      
-    } catch (err) {
-      setError(err.message);
-      setIsLoading(false);
-    }
-  }, []);
-
+  // Mark block elements containing inline comments after HTML renders
+  // Uses requestAnimationFrame to ensure DOM is ready before querying elements
   useEffect(() => {
-    loadPageData();
-  }, [loadPageData]);
+    if (!html || isLoading) return;
+    const rafId = requestAnimationFrame(() => {
+      markCommentedBlocks();
+    });
+    return () => cancelAnimationFrame(rafId);
+  }, [html, isLoading]);
 
-  // After HTML renders, mark blocks that contain inline comments
-  useEffect(() => {
-    if (!html) return;
-    const timeoutId = setTimeout(markCommentedBlocks, 10);
-    return () => clearTimeout(timeoutId);
-  }, [html]);
-
-  // Reusable StatusMessage component for navigation, error, and loading states.
-  function StatusMessage({ message }) {
+  if (error) {
     return (
-      <div className="conf-container">{message}</div>
+      <div className="conf-container">
+        <InlineMessage type="error" title="Error loading page">
+          {error}
+        </InlineMessage>
+      </div>
     );
   }
 
-  if (isNavigating) return <StatusMessage message="Navigating..." />;
-  if (error) return <StatusMessage message={`❌ ${error}`} />;
-  if (isLoading || !page) return <StatusMessage message="Loading…" />;
+  if (isLoading || !page) {
+    return (
+      <div className="conf-container conf-loading-container">
+        <Spinner size="medium" />
+        <span>Loading…</span>
+      </div>
+    );
+  }
 
   return (
-    <div className="conf-container">
-      <h1 className="conf-title">{page.title}</h1>
-      <div
-        className="conf-body"
-        dangerouslySetInnerHTML={{ __html: html }}
-      />
+    <div className="conf-page-wrapper">
+      <aside className="conf-sidebar">
+        <div className="conf-chart-section">
+          <Heading as="h2">Comment Thread Activity</Heading>
+          <CommentRepliesChart
+            comments={comments}
+            status={COMMENT_STATUS.OPEN}
+            maxItems={20}
+          />
+        </div>
+      </aside>
+
+      <main className="conf-main">
+        <div className="conf-container">
+          <Heading as="h1" size="xlarge">
+            {page?.title || UI_LABELS.UNTITLED_PAGE}
+          </Heading>
+          <div
+            className="conf-body"
+            dangerouslySetInnerHTML={{ __html: html }}
+          />
+        </div>
+      </main>
     </div>
   );
 }
