@@ -1,5 +1,5 @@
 import { getUserInfo } from "../api/confluence";
-import { DEFAULT_AVATAR, POPUP_CONFIG } from "../constants";
+import { DEFAULT_AVATAR, POPUP_CONFIG, DATE_FORMAT } from "../constants";
 import { getBaseUrl } from "./contextUtils";
 
 /**
@@ -19,7 +19,6 @@ async function enrichCommentsWithUserInfo(relatedComments) {
         const user = await getUserInfo(authorId);
         return { ...c, user };
       } catch (error) {
-        console.warn('Failed to fetch user info for comment:', c.id, error);
         return { ...c, user: null };
       }
     })
@@ -121,14 +120,16 @@ async function openCommentPopup({ event, markerRef, allComments, setPopup, getCu
  * @param {Array<Object>} comments - All available comments
  * @param {Function} setPopup - State setter for popup
  * @param {Function} getCurrentPopup - Function to get current popup state
+ * @returns {Array<{element: Element, handler: Function}>} Array of element-handler pairs for cleanup
  */
 function attachMarkerListeners(markers, comments, setPopup, getCurrentPopup) {
+  const handlers = [];
   markers.forEach((marker) => {
     const ref = marker.getAttribute("data-marker-ref");
     if (!ref) return;
 
     marker.style.cursor = "pointer";
-    marker.addEventListener("click", (e) => {
+    const handler = (e) => {
       const clickY = e.clientY !== undefined ? e.clientY : undefined;
       openCommentPopup({
         event: e,
@@ -138,8 +139,11 @@ function attachMarkerListeners(markers, comments, setPopup, getCurrentPopup) {
         getCurrentPopup,
         clickY
       });
-    });
+    };
+    marker.addEventListener("click", handler);
+    handlers.push({ element: marker, handler });
   });
+  return handlers;
 }
 
 /**
@@ -150,12 +154,14 @@ function attachMarkerListeners(markers, comments, setPopup, getCurrentPopup) {
  * @param {Array<Object>} comments - All available comments
  * @param {Function} setPopup - State setter for popup
  * @param {Function} getCurrentPopup - Function to get current popup state
+ * @returns {Array<{element: Element, handler: Function}>} Array of element-handler pairs for cleanup
  */
 function attachBlockListeners(commentedBlocks, comments, setPopup, getCurrentPopup) {
+  const handlers = [];
   commentedBlocks.forEach((block) => {
     block.style.cursor = "pointer";
     
-    block.addEventListener("click", (e) => {
+    const handler = (e) => {
       const markerInBlock = block.querySelector(".conf-inline-comment");
       if (markerInBlock) {
         const ref = markerInBlock.getAttribute("data-marker-ref");
@@ -170,28 +176,33 @@ function attachBlockListeners(commentedBlocks, comments, setPopup, getCurrentPop
           });
         }
       }
-    });
+    };
+    block.addEventListener("click", handler);
+    handlers.push({ element: block, handler });
   });
+  return handlers;
 }
 
 /**
- * Creates a cleanup function that removes all event listeners and restores elements.
+ * Creates a cleanup function that removes all event listeners.
  * 
- * @param {NodeList} markers - NodeList of comment marker elements
- * @param {NodeList} commentedBlocks - NodeList of block elements with comments
+ * @param {Array<{element: Element, handler: Function}>} markerHandlers - Array of marker element-handler pairs
+ * @param {Array<{element: Element, handler: Function}>} blockHandlers - Array of block element-handler pairs
  * @param {Function|null} documentHandler - The document click handler function to remove (if any)
  * @returns {Function} Cleanup function
  */
-function createCleanupFunction(markers, commentedBlocks, documentHandler) {
+function createCleanupFunction(markerHandlers, blockHandlers, documentHandler) {
   return () => {
-    markers.forEach((el) => {
-      const clone = el.cloneNode(true);
-      el.parentNode.replaceChild(clone, el);
+    // Remove marker event listeners
+    markerHandlers.forEach(({ element, handler }) => {
+      element.removeEventListener("click", handler);
+      element.style.cursor = "";
     });
 
-    commentedBlocks.forEach((block) => {
-      const clone = block.cloneNode(true);
-      block.parentNode.replaceChild(clone, block);
+    // Remove block event listeners
+    blockHandlers.forEach(({ element, handler }) => {
+      element.removeEventListener("click", handler);
+      element.style.cursor = "";
     });
 
     // Remove document click listener if it exists
@@ -217,30 +228,15 @@ export function bindInlineCommentPopup(html, comments, setPopup, getCurrentPopup
   const markers = document.querySelectorAll(".conf-inline-comment");
   const commentedBlocks = document.querySelectorAll(".conf-has-comment");
 
-  // Attach click listeners to comment markers
-  attachMarkerListeners(markers, comments, setPopup, getCurrentPopup);
+  // Attach click listeners to comment markers and get handler references
+  const markerHandlers = attachMarkerListeners(markers, comments, setPopup, getCurrentPopup);
 
-  // Attach click listeners to block elements
-  attachBlockListeners(commentedBlocks, comments, setPopup, getCurrentPopup);
+  // Attach click listeners to block elements and get handler references
+  const blockHandlers = attachBlockListeners(commentedBlocks, comments, setPopup, getCurrentPopup);
 
   // No document click listener - popup only closes when clicking another comment
   // Return cleanup function (no document listener to clean up)
-  return createCleanupFunction(markers, commentedBlocks, null);
-}
-
-/**
- * Safely extracts comment text from atlas_doc_format JSON.
- */
-export function extractCommentText(comment) {
-  try {
-    const raw = comment.body?.atlas_doc_format?.value;
-    if (!raw) return "(empty)";
-
-    const doc = JSON.parse(raw);
-    return doc.content?.[0]?.content?.[0]?.text ?? "(empty)";
-  } catch {
-    return "(empty)";
-  }
+  return createCleanupFunction(markerHandlers, blockHandlers, null);
 }
 
 /**
@@ -248,11 +244,7 @@ export function extractCommentText(comment) {
  */
 export function formatCommentDate(isoString) {
   try {
-    return new Date(isoString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric"
-    });
+    return new Date(isoString).toLocaleDateString(DATE_FORMAT.LOCALE, DATE_FORMAT.OPTIONS);
   } catch {
     return "";
   }
@@ -271,7 +263,6 @@ export function getAvatarUrl(user) {
     return `${baseUrl}${path}`;
   } catch (error) {
     // Fallback to default avatar if base URL cannot be extracted
-    console.warn('Could not extract base URL for avatar, using default:', error);
     return DEFAULT_AVATAR;
   }
 }

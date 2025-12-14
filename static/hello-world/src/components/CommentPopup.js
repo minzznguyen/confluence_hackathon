@@ -1,6 +1,7 @@
-import { extractCommentText, formatCommentDate, getAvatarUrl } from "../utils/fullpageProcessing";
-import { buildCommentTree } from "../utils/commentRanking";
+import { formatCommentDate, getAvatarUrl } from "../utils/commentPopup";
+import { buildCommentTree, getCommentBody } from "../utils/commentRanking";
 import Button from '@atlaskit/button/new';
+import PropTypes from 'prop-types';
 import "../styles/comments.css";
 
 /**
@@ -14,7 +15,7 @@ import "../styles/comments.css";
  */
 function CommentItem({ comment, depth = 0, showCloseButton = false, onClose }) {
   const user = comment?.user;
-  const text = extractCommentText(comment);
+  const text = getCommentBody(comment, Infinity);
   const createdAt = comment?.version?.createdAt || comment?.createdAt;
   const date = formatCommentDate(createdAt);
   const avatarUrl = getAvatarUrl(user);
@@ -107,4 +108,12 @@ export default function CommentPopup({ visible, x, y, comments = [], onClose }) 
     </div>
   );
 }
+
+CommentPopup.propTypes = {
+  visible: PropTypes.bool.isRequired,
+  x: PropTypes.number.isRequired,
+  y: PropTypes.number.isRequired,
+  comments: PropTypes.arrayOf(PropTypes.object),
+  onClose: PropTypes.func,
+};
 

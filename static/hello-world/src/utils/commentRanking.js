@@ -16,8 +16,11 @@ import { COMMENT_STATUS } from '../constants';
 /**
  * Builds a tree structure from a flat array of comments.
  * 
+ * By default, only includes essential fields: id, body, resolutionStatus, inlineMarkerRef, 
+ * inlineOriginalSelection, and children. Use transformNode to include additional fields.
+ * 
  * @param {Array<Object>} comments - Flat array from API. Each comment has id, optional parentCommentId, body, resolutionStatus, and properties.{inlineMarkerRef, inlineOriginalSelection}
- * @param {Function} [transformNode] - Optional function to transform each node. If provided, receives (comment, node) and returns the transformed node.
+ * @param {Function} [transformNode] - Optional function to transform each node. If provided, receives (comment, baseNode) and returns the transformed node. If not provided, returns baseNode with only essential fields.
  * @returns {CommentTree} Tree with roots array of top-level nodes
  * 
  * @example
@@ -26,6 +29,13 @@ import { COMMENT_STATUS } from '../constants';
  *   { id: '2', parentCommentId: '1', resolutionStatus: 'open' }
  * ]);
  * // Returns: { roots: [{ id: '1', children: [{ id: '2', children: [] }] }] }
+ * 
+ * @example
+ * buildCommentTree(comments, (comment, baseNode) => ({
+ *   ...comment,
+ *   ...baseNode,
+ *   children: []
+ * }));
  */
 export function buildCommentTree(comments, transformNode = null) {
   if (!comments || comments.length === 0) {
@@ -38,26 +48,18 @@ export function buildCommentTree(comments, transformNode = null) {
   for (const comment of comments) {
     let node;
     
-    // Apply transform if provided
-    if (transformNode) {
-      const baseNode = {
-        id: comment.id,
-        body: comment.body,
-        resolutionStatus: comment.resolutionStatus || null,
-        inlineMarkerRef: comment.properties?.inlineMarkerRef || null,
-        inlineOriginalSelection: comment.properties?.inlineOriginalSelection || null,
-        children: [],
-      };
-      node = transformNode(comment, baseNode);
-    } else {
-      // Default: preserve all comment fields and extract inlineMarkerRef to root level
-      node = {
-        ...comment,
-        inlineMarkerRef: comment.properties?.inlineMarkerRef || null,
-        inlineOriginalSelection: comment.properties?.inlineOriginalSelection || null,
-        children: [],
-      };
-    }
+    // Create base node with only essential fields
+    const baseNode = {
+      id: comment.id,
+      body: comment.body,
+      resolutionStatus: comment.resolutionStatus || null,
+      inlineMarkerRef: comment.properties?.inlineMarkerRef || null,
+      inlineOriginalSelection: comment.properties?.inlineOriginalSelection || null,
+      children: [],
+    };
+
+    // Apply transform if provided, otherwise use base node as-is
+    node = transformNode ? transformNode(comment, baseNode) : baseNode;
     
     nodeMap.set(comment.id, node);
   }
