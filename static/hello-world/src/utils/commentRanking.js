@@ -17,6 +17,7 @@ import { COMMENT_STATUS } from '../constants';
  * Builds a tree structure from a flat array of comments.
  * 
  * @param {Array<Object>} comments - Flat array from API. Each comment has id, optional parentCommentId, body, resolutionStatus, and properties.{inlineMarkerRef, inlineOriginalSelection}
+ * @param {Function} [transformNode] - Optional function to transform each node. If provided, receives (comment, node) and returns the transformed node.
  * @returns {CommentTree} Tree with roots array of top-level nodes
  * 
  * @example
@@ -26,7 +27,7 @@ import { COMMENT_STATUS } from '../constants';
  * ]);
  * // Returns: { roots: [{ id: '1', children: [{ id: '2', children: [] }] }] }
  */
-function buildCommentTree(comments) {
+export function buildCommentTree(comments, transformNode) {
   if (!comments || comments.length === 0) {
     return { roots: [] };
   }
@@ -35,14 +36,24 @@ function buildCommentTree(comments) {
   const roots = [];
 
   for (const comment of comments) {
-    nodeMap.set(comment.id, {
+    let node = {
       id: comment.id,
       body: comment.body,
       resolutionStatus: comment.resolutionStatus || null,
       inlineMarkerRef: comment.properties?.inlineMarkerRef || null,
       inlineOriginalSelection: comment.properties?.inlineOriginalSelection || null,
       children: [],
-    });
+    };
+    
+    // Apply transform if provided, otherwise preserve all fields as fallback
+    if (transformNode) {
+      node = transformNode(comment, node);
+    } else {
+      // Default: preserve all comment fields while ensuring children array exists
+      node = { ...comment, children: [] };
+    }
+    
+    nodeMap.set(comment.id, node);
   }
 
   for (const comment of comments) {
