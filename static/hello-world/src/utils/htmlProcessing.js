@@ -20,10 +20,12 @@ export function sanitizeHTML(html) {
 
 /**
  * Converts Confluence inline comment markers to HTML spans for styling and interaction.
- * Transforms <ac:inline-comment-marker ac:ref="..."> to <span class="conf-inline-comment" data-marker-ref="...">
+ * Only wraps markers that have open comments (exist in colorMap).
+ * Resolved/closed comment markers are unwrapped, returning just the content.
  *
  * @param {string} html - HTML string containing Confluence comment markers
- * @returns {string} HTML with comment markers converted to spans
+ * @param {Map} colorMap - Map of inlineMarkerRef to color class (only open comments)
+ * @returns {string} HTML with open comment markers converted to spans
  */
 export function wrapInlineCommentMarkers(html, colorMap = new Map()) {
   if (!html) return "";
@@ -35,13 +37,14 @@ export function wrapInlineCommentMarkers(html, colorMap = new Map()) {
       const refMatch = attributes.match(/ac:ref="([^"]+)"/);
       const inlineMarkerRef = refMatch ? refMatch[1] : null;
 
-      // Get color class from map, default to lightest if not found
-      const colorClass =
-        inlineMarkerRef && colorMap.has(inlineMarkerRef)
-          ? colorMap.get(inlineMarkerRef)
-          : "comment-rank-0";
+      // Only wrap if this marker has an open comment (exists in colorMap)
+      if (inlineMarkerRef && colorMap.has(inlineMarkerRef)) {
+        const colorClass = colorMap.get(inlineMarkerRef);
+        return `<span class="conf-inline-comment ${colorClass}" data-marker-ref="${inlineMarkerRef}">${content}</span>`;
+      }
 
-      return `<span class="conf-inline-comment ${colorClass}" data-marker-ref="${inlineMarkerRef || ""}">${content}</span>`;
+      // Resolved/closed comments: return content without wrapper
+      return content;
     }
   );
 }
