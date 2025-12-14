@@ -5,7 +5,7 @@ modules:
       resolver:
         function: resolver
       routePrefix: hello-world
-  
+
   confluence:contentBylineItem:
     - key: heatmap-content-byline
       title: Heatmap
@@ -15,10 +15,42 @@ modules:
       resolver:
         function: resolver
       viewportContainer: modal
-  
+
+  rovo:agent:
+    - key: hello-world-agent
+      name: Hello world agent
+      description: An Agent for testing Forge agent functionality
+      prompt: >
+        You are a simple Rovo Agent that helps Forge developers build their first
+        Agent.
+
+        You can create Forge logs by using the hello-world-logger action.
+
+        If the user hasn't provided a message when they ask you to create a log ask them to provide one.
+      conversationStarters:
+        - Log a message to Forge logs
+      actions:
+        - hello-world-logger
+  action:
+    - key: hello-world-logger
+      function: messageLogger
+      actionVerb: TRIGGER
+      description: >
+        When a user asks to log a message, this action logs the message to the
+        Forge logs.
+      inputs:
+        message:
+          title: Message
+          type: string
+          required: true
+          description: |
+            "The message that the user has requested be logged to Forge logs"
+
   function:
     - key: resolver
       handler: index.handler
+    - key: messageLogger
+      handler: index.messageLogger
 resources:
   - key: main
     path: static/hello-world/build

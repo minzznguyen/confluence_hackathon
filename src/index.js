@@ -3,10 +3,12 @@
  * Defines serverless functions invokable from the frontend via @forge/bridge.
  */
 
-import Resolver from '@forge/resolver';
+import Resolver from "@forge/resolver";
 
 const resolver = new Resolver();
 
-// Add resolver functions here if needed in the future
+export function messageLogger(payload) {
+  console.log(`Logging message: ${payload.message}`);
+}
 
 export const handler = resolver.getDefinitions();
