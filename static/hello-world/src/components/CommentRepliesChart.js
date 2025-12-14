@@ -16,7 +16,8 @@ const COLORS = {
 };
 
 /**
- * Horizontal bar chart displaying comment threads ranked by reply count.
+ * Horizontal bar chart displaying comment threads ranked by thread size.
+ * Thread size = parent comment + all replies.
  * Clicking a bar scrolls to the corresponding inline comment in the page.
  * 
  * @param {Array} comments - Array of comment objects
@@ -50,10 +51,11 @@ export default function CommentRepliesChart({
     const reversed = [...topComments].reverse();
     rankedCommentsRef.current = reversed;
 
-    // Prepare chart data: labels (selected text), tooltips (comment body), and values (reply counts)
+    // Prepare chart data: labels (selected text), tooltips (comment body), and values (thread counts)
     const labels = reversed.map((node) => getCommentLabel(node, 20));
     const tooltipLabels = reversed.map((node) => getCommentBody(node, 40));
-    const data = reversed.map((node) => node.replyCount);
+    const data = reversed.map((node) => node.threadCount);
+    const replyCounts = reversed.map((node) => node.threadCount - 1);
     // Dynamic height based on number of items (32px per item + padding)
     const dynamicHeight = Math.max(200, topComments.length * 32 + 60);
 
@@ -74,7 +76,8 @@ export default function CommentRepliesChart({
         formatter: (params) => {
           const item = params[0];
           const tooltip = tooltipLabels[item.dataIndex];
-          return `<span style="color:${COLORS.N200}">${tooltip}</span><br/><strong>${item.value}</strong> replies`;
+          const replyCount = replyCounts[item.dataIndex];
+          return `<span style="color:${COLORS.N200}">${tooltip}</span><br/><strong>${replyCount}</strong> ${replyCount === 1 ? 'reply' : 'replies'}`;
         },
       },
       grid: {
@@ -114,7 +117,7 @@ export default function CommentRepliesChart({
       },
       series: [
         {
-          name: 'Replies',
+          name: 'Comments',
           type: 'bar',
           data: data,
           barWidth: 16,
