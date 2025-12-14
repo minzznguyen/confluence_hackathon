@@ -73,7 +73,7 @@ function CommentItem({ comment, depth = 0, showCloseButton = false, onClose }) {
   );
 }
 
-export default function CommentPopup({ visible, x, y, comments = [], onClose }) {
+export default function CommentPopup({ visible, y, comments = [], onClose }) {
   if (!visible || !comments || comments.length === 0) {
     return null;
   }
@@ -89,7 +89,6 @@ export default function CommentPopup({ visible, x, y, comments = [], onClose }) 
     <div
       className="conf-comment-popup"
       style={{
-        left: `${x}px`,
         top: `${y}px`,
       }}
       onClick={(e) => e.stopPropagation()}
@@ -111,7 +110,6 @@ export default function CommentPopup({ visible, x, y, comments = [], onClose }) 
 
 CommentPopup.propTypes = {
   visible: PropTypes.bool.isRequired,
-  x: PropTypes.number.isRequired,
   y: PropTypes.number.isRequired,
   comments: PropTypes.arrayOf(PropTypes.object),
   onClose: PropTypes.func,

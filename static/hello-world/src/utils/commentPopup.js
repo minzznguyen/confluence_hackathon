@@ -1,5 +1,5 @@
 import { getUserInfo } from "../api/confluence";
-import { DEFAULT_AVATAR, POPUP_CONFIG, DATE_FORMAT } from "../constants";
+import { DEFAULT_AVATAR, DATE_FORMAT } from "../constants";
 import { getBaseUrl } from "./contextUtils";
 
 /**
@@ -27,31 +27,28 @@ async function enrichCommentsWithUserInfo(relatedComments) {
 
 /**
  * Calculates the popup position to align with the text line.
- * Uses document coordinates since popup uses position: absolute.
+ * Returns viewport coordinates for use with position: fixed.
  * 
  * @param {Object} options
  * @param {number} [options.clickY] - Y coordinate of click event in viewport (for block clicks)
  * @param {HTMLElement} [options.target] - Target element (for marker clicks)
- * @returns {Object} Object with x and y coordinates for popup position (document coordinates)
+ * @returns {Object} Object with y coordinate for popup position (viewport coordinates)
  */
 function calculatePopupPosition({ clickY, target }) {
-  const scrollTop = window.scrollY || document.documentElement.scrollTop;
-  const scrollLeft = window.scrollX || document.documentElement.scrollLeft;
-
-  // Position on the right side with a margin from the right edge
-  const x = window.innerWidth - POPUP_CONFIG.WIDTH - POPUP_CONFIG.RIGHT_MARGIN + scrollLeft;
-
+  // Calculate y position in viewport coordinates (for position: fixed)
+  // x position (right) is handled by CSS for horizontal responsiveness
+  // Vertical position will be updated on scroll to stay aligned with text
   let y;
   if (clickY !== undefined) {
-    y = clickY + scrollTop;
+    y = clickY; // clickY is already in viewport coordinates
   } else if (target) {
     const rect = target.getBoundingClientRect();
-    y = rect.top + scrollTop;
+    y = rect.top; // getBoundingClientRect returns viewport coordinates
   } else {
-    y = scrollTop;
+    y = window.scrollY || document.documentElement.scrollTop;
   }
 
-  return { x, y };
+  return { y };
 }
 
 /**
@@ -106,10 +103,10 @@ async function openCommentPopup({ event, markerRef, allComments, setPopup, getCu
 
   setPopup({
     visible: true,
-    x: position.x,
     y: position.y,
     comments: enriched,
-    markerRef: markerRef
+    markerRef: markerRef,
+    target: event.target, // Store target for scroll recalculation
   });
 }
 

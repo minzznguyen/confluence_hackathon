@@ -14,10 +14,10 @@ import { bindInlineCommentPopup } from "../utils/commentPopup";
 export function useCommentPopup(html, isLoading, comments) {
   const [popup, setPopup] = useState({
     visible: false,
-    x: 0,
     y: 0,
     comments: [],
     markerRef: null, // Track which marker is currently open
+    target: null,
   });
 
   // Use ref to track current popup state for synchronous access
@@ -61,8 +61,38 @@ export function useCommentPopup(html, isLoading, comments) {
     };
   }, [html, isLoading, comments]);
 
+  useEffect(() => {
+    if (!popup.visible || !popup.target) return;
+
+    const updateVerticalPosition = () => {
+      const rect = popup.target.getBoundingClientRect();
+      setPopup((prev) => ({
+        ...prev,
+        y: rect.top,
+      }));
+    };
+
+    let rafId = null;
+    const handleScroll = () => {
+      if (rafId) return;
+      rafId = requestAnimationFrame(() => {
+        updateVerticalPosition();
+        rafId = null;
+      });
+    };
+
+    window.addEventListener("scroll", handleScroll, true);
+    
+    return () => {
+      window.removeEventListener("scroll", handleScroll, true);
+      if (rafId) {
+        cancelAnimationFrame(rafId);
+      }
+    };
+  }, [popup.visible, popup.target]);
+
   const handleClose = () => {
-    setPopup((prev) => ({ ...prev, visible: false, markerRef: null }));
+    setPopup((prev) => ({ ...prev, visible: false, markerRef: null, target: null }));
   };
 
   return {

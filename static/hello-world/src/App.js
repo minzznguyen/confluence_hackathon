@@ -57,7 +57,6 @@ export default function App() {
 
       <CommentPopup
         visible={popup.visible}
-        x={popup.x}
         y={popup.y}
         comments={popup.comments}
         onClose={onClose}

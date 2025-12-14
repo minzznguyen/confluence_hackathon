@@ -16,7 +16,8 @@
 
 /* Comment Popup Styles */
 .conf-comment-popup {
-  position: absolute; /* Moves with scroll + anchors to document */
+  position: fixed; /* Fixed to viewport - responsive horizontally, updates vertically on scroll */
+  right: var(--conf-popup-right-margin, 56px); /* Position from right edge - responsive */
   width: 280px; 
   max-height: 500px;
   background: #ffffff;
