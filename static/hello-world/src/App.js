@@ -1,7 +1,9 @@
-import { useEffect } from "react";
+import { useEffect, useState, useRef } from "react";
 import { markCommentedBlocks } from "./utils/htmlProcessing";
+import { bindInlineCommentPopup } from "./utils/fullpageProcessing";
 import { usePageData } from "./hooks/usePageData";
 import CommentRepliesChart from "./components/CommentRepliesChart";
+import CommentPopup from "./components/CommentPopup";
 import Heading from "@atlaskit/heading";
 import InlineMessage from "@atlaskit/inline-message";
 import Spinner from "@atlaskit/spinner";
@@ -9,6 +11,17 @@ import { COMMENT_STATUS, UI_LABELS } from "./constants";
 
 export default function App() {
   const { page, html, comments, error, isLoading } = usePageData();
+  const [popup, setPopup] = useState({
+    visible: false,
+    x: 0,
+    y: 0,
+    comments: [],
+    markerRef: null, // Track which marker is currently open
+  });
+
+  // Use ref to track current popup state for synchronous access
+  const popupRef = useRef(popup);
+  popupRef.current = popup;
 
   // Mark block elements containing inline comments after HTML renders
   // Uses requestAnimationFrame to ensure DOM is ready before querying elements
@@ -19,6 +32,33 @@ export default function App() {
     });
     return () => cancelAnimationFrame(rafId);
   }, [html, isLoading]);
+
+  // Bind click listeners to inline comment markers to open popup
+  useEffect(() => {
+    if (!html || isLoading || comments.length === 0) return;
+
+    let cleanup = null;
+    let isMounted = true;
+    
+    // Function to get current popup state from ref (synchronous access)
+    const getCurrentPopup = () => popupRef.current;
+    
+    // Wait for DOM to be ready before binding listeners
+    const rafId = requestAnimationFrame(() => {
+      if (isMounted) {
+        cleanup = bindInlineCommentPopup(html, comments, setPopup, getCurrentPopup);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      cancelAnimationFrame(rafId);
+      // Call cleanup function to remove event listeners
+      if (cleanup && typeof cleanup === 'function') {
+        cleanup();
+      }
+    };
+  }, [html, isLoading, comments]);
 
   if (error) {
     return (
@@ -64,6 +104,14 @@ export default function App() {
           />
         </div>
       </main>
+
+      <CommentPopup
+        visible={popup.visible}
+        x={popup.x}
+        y={popup.y}
+        comments={popup.comments}
+        onClose={() => setPopup((prev) => ({ ...prev, visible: false, markerRef: null }))}
+      />
     </div>
   );
 }
