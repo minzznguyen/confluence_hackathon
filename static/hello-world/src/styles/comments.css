@@ -14,9 +14,6 @@
   transition: background-color 0.2s ease;
 }
 
-.conf-inline-comment:hover {
-  background-color: var(--conf-color-hover-yellow);
-}
 /* Comment Popup Styles */
 .conf-comment-popup {
   position: absolute; /* Moves with scroll + anchors to document */
@@ -54,7 +51,7 @@
 
 .conf-popup-comment-header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 8px;
   margin-bottom: 8px;
 }
@@ -77,19 +74,21 @@
 .conf-popup-user-info {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .conf-popup-user-name {
   font-size: 14px;
   font-weight: 600;
   color: #172b4d;
-  line-height: 1.4;
+  line-height: 1.2;
 }
 
 .conf-popup-date {
   font-size: 12px;
   color: #6b778c;
-  margin-top: 2px;
+  line-height: 1.2;
 }
 
 .conf-popup-comment-text {
@@ -98,7 +97,6 @@
   line-height: 1.5;
   white-space: pre-wrap;
   word-wrap: break-word;
-  margin-left: 40px; /* Align with text below avatar */
 }
 
 /* Reply styling - indent replies to show thread structure */
@@ -147,4 +145,12 @@
 
 .conf-has-comment-rank-3 {
   border-left-color: #de350b; /* Darkest red for highest rank */
+}
+
+.conf-inline-comment:hover,
+.conf-inline-comment.comment-rank-0:hover,
+.conf-inline-comment.comment-rank-1:hover,
+.conf-inline-comment.comment-rank-2:hover,
+.conf-inline-comment.comment-rank-3:hover {
+  background-color: var(--conf-color-hover-yellow) !important;
 }
