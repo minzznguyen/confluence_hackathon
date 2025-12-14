@@ -6,6 +6,7 @@ import Heading from "@atlaskit/heading";
 import InlineMessage from "@atlaskit/inline-message";
 import Spinner from "@atlaskit/spinner";
 import { COMMENT_STATUS, UI_LABELS } from "./constants";
+import { rovo } from "@forge/bridge";
 
 export default function App() {
   const { page, html, comments, error, isLoading } = usePageData();
@@ -51,6 +52,19 @@ export default function App() {
           />
         </div>
       </aside>
+      <button
+        onClick={async () => {
+          const test = await rovo.open({
+            type: "forge",
+            agentName: "My Hello World agent",
+            agentKey: "hello-world-agent",
+            prompt: `Testing Rovo on page: ${page.title}`,
+          });
+          console.log("Thao Testing:", test);
+        }}
+      >
+        Open Thao Testing Rovo
+      </button>
 
       <main className="conf-main">
         <div className="conf-container">
