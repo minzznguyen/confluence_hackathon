@@ -63,16 +63,13 @@ export default function App() {
   if (error) {
     return (
       <div className="conf-container">
-        <InlineMessage
-          type="error"
-          title="Error loading page"
-        >
+        <InlineMessage type="error" title="Error loading page">
           {error}
         </InlineMessage>
       </div>
     );
   }
-  
+
   if (isLoading || !page) {
     return (
       <div className="conf-container conf-loading-container">
@@ -87,8 +84,8 @@ export default function App() {
       <aside className="conf-sidebar">
         <div className="conf-chart-section">
           <Heading as="h2">Comment Thread Activity</Heading>
-          <CommentRepliesChart 
-            comments={comments} 
+          <CommentRepliesChart
+            comments={comments}
             status={COMMENT_STATUS.OPEN}
             maxItems={20}
           />
@@ -97,7 +94,9 @@ export default function App() {
 
       <main className="conf-main">
         <div className="conf-container">
-          <Heading as="h1" size="xlarge">{page?.title || UI_LABELS.UNTITLED_PAGE}</Heading>
+          <Heading as="h1" size="xlarge">
+            {page?.title || UI_LABELS.UNTITLED_PAGE}
+          </Heading>
           <div
             className="conf-body"
             dangerouslySetInnerHTML={{ __html: html }}

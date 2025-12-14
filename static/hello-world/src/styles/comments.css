@@ -114,3 +114,37 @@
 }
 
 
+
+/* Dynamic Comment Ranking - 4 color tiers for text backgrounds */
+.conf-inline-comment.comment-rank-0 {
+  background-color: #ffebe6; /* Lightest - lowest reply count */
+}
+
+.conf-inline-comment.comment-rank-1 {
+  background-color: #ffccc7; /* Light-medium */
+}
+
+.conf-inline-comment.comment-rank-2 {
+  background-color: #ff9a90; /* Medium-dark */
+}
+
+.conf-inline-comment.comment-rank-3 {
+  background-color: #ff6b61; /* Darkest - highest reply count */
+}
+
+/* Dynamic block borders matching comment ranks */
+.conf-has-comment-rank-0 {
+  border-left-color: #ffccc7; /* Slightly darker than rank-0 background */
+}
+
+.conf-has-comment-rank-1 {
+  border-left-color: #ff9a90; /* Slightly darker than rank-1 background */
+}
+
+.conf-has-comment-rank-2 {
+  border-left-color: #ff6b61; /* Slightly darker than rank-2 background */
+}
+
+.conf-has-comment-rank-3 {
+  border-left-color: #de350b; /* Darkest red for highest rank */
+}

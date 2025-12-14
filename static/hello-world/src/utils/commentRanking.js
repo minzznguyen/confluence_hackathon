@@ -97,13 +97,14 @@ function countReplies(node) {
 }
 
 /**
- * Returns parent comments ranked by reply count (descending).
+ * Returns parent comments ranked by thread size (descending).
+ * Thread size = 1 (parent) + number of replies.
  * Filters by status before ranking.
  * 
  * @param {Array<Object>} comments - Flat array from API
  * @param {Object} [options={}]
  * @param {string} [options.status=COMMENT_STATUS.OPEN] - Filter by status
- * @returns {Array<CommentNode & { replyCount: number }>} Root comments sorted by replyCount (descending)
+ * @returns {Array<CommentNode & { threadCount: number }>} Root comments sorted by threadCount (descending)
  * 
  * @example
  * rankParentsByReplies([
@@ -112,7 +113,7 @@ function countReplies(node) {
  *   { id: '3', parentCommentId: '1', resolutionStatus: 'open' },
  *   { id: '4', resolutionStatus: 'open' }
  * ]);
- * // Returns: [{ id: '1', replyCount: 2, ... }, { id: '4', replyCount: 0, ... }]
+ * // Returns: [{ id: '1', threadCount: 3, ... }, { id: '4', threadCount: 1, ... }]
  */
 export function rankParentsByReplies(comments, options = {}) {
   if (!comments?.length) return [];
@@ -123,8 +124,8 @@ export function rankParentsByReplies(comments, options = {}) {
   const filtered = roots.filter(r => r.resolutionStatus === status);
 
   return filtered
-    .map(root => ({ ...root, replyCount: countReplies(root) }))
-    .sort((a, b) => b.replyCount - a.replyCount);
+    .map(root => ({ ...root, threadCount: 1 + countReplies(root) }))
+    .sort((a, b) => b.threadCount - a.threadCount);
 }
 
 /**

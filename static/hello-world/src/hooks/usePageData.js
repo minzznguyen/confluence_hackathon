@@ -2,7 +2,6 @@ import { useState, useCallback, useEffect } from 'react';
 import { view } from "@forge/bridge";
 import { navigateToFullPage } from "../utils/navigation";
 import { loadPage } from "../utils/pageLoader";
-import { getInlineComments } from "../api/confluence";
 import { CONFLUENCE_MODULES, ERROR_MESSAGES } from "../constants";
 import { useSafeAsync } from "./useSafeAsync";
 
@@ -43,12 +42,10 @@ export function usePageData() {
         return;
       }
 
-      const { page: loadedPage, html: convertedHtml, contextInfo } = await loadPage();
+      const { page: loadedPage, html: convertedHtml, comments: inlineComments } = await loadPage();
       safeUpdate(setPage, loadedPage);
       safeUpdate(setHtml, convertedHtml);
-
-      const inlineComments = await getInlineComments(contextInfo?.pageId);
-      safeUpdate(setComments, inlineComments || []);
+      safeUpdate(setComments, inlineComments);
       safeUpdate(setIsLoading, false);
       
     } catch (err) {
