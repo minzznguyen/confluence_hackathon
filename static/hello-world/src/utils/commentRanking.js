@@ -27,7 +27,7 @@ import { COMMENT_STATUS } from '../constants';
  * ]);
  * // Returns: { roots: [{ id: '1', children: [{ id: '2', children: [] }] }] }
  */
-export function buildCommentTree(comments, transformNode) {
+export function buildCommentTree(comments, transformNode = null) {
   if (!comments || comments.length === 0) {
     return { roots: [] };
   }
@@ -36,21 +36,27 @@ export function buildCommentTree(comments, transformNode) {
   const roots = [];
 
   for (const comment of comments) {
-    let node = {
-      id: comment.id,
-      body: comment.body,
-      resolutionStatus: comment.resolutionStatus || null,
-      inlineMarkerRef: comment.properties?.inlineMarkerRef || null,
-      inlineOriginalSelection: comment.properties?.inlineOriginalSelection || null,
-      children: [],
-    };
+    let node;
     
-    // Apply transform if provided, otherwise preserve all fields as fallback
+    // Apply transform if provided
     if (transformNode) {
-      node = transformNode(comment, node);
+      const baseNode = {
+        id: comment.id,
+        body: comment.body,
+        resolutionStatus: comment.resolutionStatus || null,
+        inlineMarkerRef: comment.properties?.inlineMarkerRef || null,
+        inlineOriginalSelection: comment.properties?.inlineOriginalSelection || null,
+        children: [],
+      };
+      node = transformNode(comment, baseNode);
     } else {
-      // Default: preserve all comment fields while ensuring children array exists
-      node = { ...comment, children: [] };
+      // Default: preserve all comment fields and extract inlineMarkerRef to root level
+      node = {
+        ...comment,
+        inlineMarkerRef: comment.properties?.inlineMarkerRef || null,
+        inlineOriginalSelection: comment.properties?.inlineOriginalSelection || null,
+        children: [],
+      };
     }
     
     nodeMap.set(comment.id, node);
