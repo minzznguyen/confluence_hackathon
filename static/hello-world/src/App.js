@@ -41,6 +41,18 @@ export default function App() {
 
   return (
     <div className="conf-page-wrapper">
+      <input
+        type="checkbox"
+        id="conf-sidebar-toggle"
+        className="conf-sidebar-checkbox"
+        aria-label="Toggle sidebar"
+      />
+      <label className="conf-sidebar-toggle" htmlFor="conf-sidebar-toggle">
+        <span />
+        <span />
+        <span />
+      </label>
+
       <aside className="conf-sidebar">
         <div className="conf-chart-section">
           <Heading as="h2">Comment Thread Activity</Heading>

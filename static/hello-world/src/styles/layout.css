@@ -12,6 +12,7 @@
 .conf-page-wrapper {
   display: flex;
   min-height: 100vh;
+  position: relative;
 }
 
 .conf-sidebar {
@@ -35,4 +36,41 @@
   display: flex;
   align-items: center;
   gap: 12px;
+}
+
+.conf-sidebar-toggle {
+  position: fixed;
+  top: var(--conf-space-lg);
+  left: var(--conf-space-lg);
+  width: 20px;
+  height: 20px;
+  padding: var(--conf-space-xs);
+  background: transparent;
+  box-shadow: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  cursor: pointer;
+  z-index: 10;
+}
+
+.conf-sidebar-toggle span {
+  display: block;
+  height: 1px;
+  background: var(--conf-color-text-secondary);
+  border-radius: 2px;
+}
+
+.conf-chart-section {
+  margin-top: 60px;
+}
+
+.conf-sidebar-checkbox {
+  position: fixed;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.conf-sidebar-checkbox:checked ~ .conf-sidebar {
+  display: none;
 }
