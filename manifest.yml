@@ -27,7 +27,7 @@ app:
     name: nodejs22.x
     memoryMB: 256
     architecture: arm64
-  id: ari:cloud:ecosystem::app/24e34540-92df-4b82-81a2-46340f7d3440
+  id: ari:cloud:ecosystem::app/3ecc8d1a-126b-4557-8427-eb6c04132db4
 permissions:
   scopes:
     - read:confluence-user
