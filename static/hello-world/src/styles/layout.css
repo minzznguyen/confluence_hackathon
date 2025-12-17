@@ -74,3 +74,23 @@
 .conf-sidebar-checkbox:checked ~ .conf-sidebar {
   display: none;
 }
+
+.rovo-agent-button {
+  padding: 8px 16px;
+  background-color: #0052CC;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.rovo-agent-button:hover {
+  background-color: #0065FF;
+}
+
+.rovo-agent-button:active {
+  background-color: #0047A3;
+}
