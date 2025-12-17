@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { markCommentedBlocks } from "./utils/htmlProcessing";
 import { usePageData } from "./hooks/usePageData";
+import { openRovoAgent } from "./utils/rovoAgent";
 import CommentRepliesChart from "./components/CommentRepliesChart";
 import Heading from "@atlaskit/heading";
 import InlineMessage from "@atlaskit/inline-message";
@@ -39,6 +40,14 @@ export default function App() {
     );
   }
 
+  const handleOpenRovo = async () => {
+    try {
+      await openRovoAgent();
+    } catch (error) {
+      console.error("Failed to open Rovo agent:", error);
+    }
+  };
+
   return (
     <div className="conf-page-wrapper">
       <input
@@ -66,9 +75,18 @@ export default function App() {
 
       <main className="conf-main">
         <div className="conf-container">
-          <Heading as="h1" size="xlarge">
-            {page?.title || UI_LABELS.UNTITLED_PAGE}
-          </Heading>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+            <button 
+              className="rovo-agent-button"
+              onClick={handleOpenRovo}
+              aria-label="Open AI Assistant"
+            >
+              AI Assistant
+            </button>
+            <Heading as="h1" size="xlarge" style={{ margin: 0 }}>
+              {page?.title || UI_LABELS.UNTITLED_PAGE}
+            </Heading>
+          </div>
           <div
             className="conf-body"
             dangerouslySetInnerHTML={{ __html: html }}
