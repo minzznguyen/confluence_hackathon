@@ -3,12 +3,50 @@ import { DEFAULT_AVATAR, DATE_FORMAT } from "../constants";
 import { getBaseUrl } from "./contextUtils";
 
 /**
+ * Finds all comments related to a marker reference (root comments + all descendants).
+ * 
+ * @param {string} markerRef - The inline marker reference ID
+ * @param {Array<Object>} allComments - All available comments
+ * @returns {Array<Object>} Array of related comments (root + descendants)
+ */
+export function findCommentsForMarker(markerRef, allComments) {
+  if (!markerRef || !allComments || allComments.length === 0) {
+    return [];
+  }
+
+  // Get all comments that match this markerRef
+  const rootComments = allComments.filter(
+    (c) => c.properties?.inlineMarkerRef === markerRef
+  );
+  if (rootComments.length === 0) return [];
+
+  // Build a set of root comment IDs
+  const rootCommentIds = new Set(rootComments.map(c => c.id));
+  
+  // Recursively find all descendant comments (replies and nested replies)
+  const relatedIds = new Set(rootCommentIds);
+  let foundNew = true;
+  
+  while (foundNew) {
+    foundNew = false;
+    for (const comment of allComments) {
+      if (!relatedIds.has(comment.id) && comment.parentCommentId && relatedIds.has(comment.parentCommentId)) {
+        relatedIds.add(comment.id);
+        foundNew = true;
+      }
+    }
+  }
+  
+  return allComments.filter(c => relatedIds.has(c.id));
+}
+
+/**
  * Enriches comments with user information by fetching user data for each comment author.
  * 
  * @param {Array<Object>} relatedComments - Array of comment objects to enrich
  * @returns {Promise<Array<Object>>} Array of enriched comments with user property
  */
-async function enrichCommentsWithUserInfo(relatedComments) {
+export async function enrichCommentsWithUserInfo(relatedComments) {
   return Promise.all(
     relatedComments.map(async (c) => {
       try {
@@ -23,6 +61,20 @@ async function enrichCommentsWithUserInfo(relatedComments) {
       }
     })
   );
+}
+
+/**
+ * Finds and enriches all comments for a marker reference.
+ * This is the main utility function for getting popup-ready comment data.
+ * 
+ * @param {string} markerRef - The inline marker reference ID
+ * @param {Array<Object>} allComments - All available comments
+ * @returns {Promise<Array<Object>>} Array of enriched comments ready for popup display
+ */
+export async function getEnrichedCommentsForMarker(markerRef, allComments) {
+  const related = findCommentsForMarker(markerRef, allComments);
+  if (related.length === 0) return [];
+  return enrichCommentsWithUserInfo(related);
 }
 
 /**
@@ -70,34 +122,9 @@ async function openCommentPopup({ event, markerRef, allComments, setPopup, getCu
     return;
   }
 
-  // First, get all comments that match this markerRef
-  const rootComments = allComments.filter(
-    (c) => c.properties?.inlineMarkerRef === markerRef
-  );
-  if (rootComments.length === 0) return;
-
-  // Build a set of root comment IDs
-  const rootCommentIds = new Set(rootComments.map(c => c.id));
-  
-  // Recursively find all descendant comments (replies and nested replies)
-  const relatedIds = new Set(rootCommentIds);
-  let foundNew = true;
-  
-  // Keep iterating until we've found all descendants
-  while (foundNew) {
-    foundNew = false;
-    for (const comment of allComments) {
-      if (!relatedIds.has(comment.id) && comment.parentCommentId && relatedIds.has(comment.parentCommentId)) {
-        relatedIds.add(comment.id);
-        foundNew = true;
-      }
-    }
-  }
-  
-  // Get all related comments (root + all descendants)
-  const related = allComments.filter(c => relatedIds.has(c.id));
-
-  const enriched = await enrichCommentsWithUserInfo(related);
+  // Use shared utility to find and enrich comments
+  const enriched = await getEnrichedCommentsForMarker(markerRef, allComments);
+  if (enriched.length === 0) return;
 
   const position = calculatePopupPosition({ clickY, target: event.target });
 
@@ -106,7 +133,7 @@ async function openCommentPopup({ event, markerRef, allComments, setPopup, getCu
     y: position.y,
     comments: enriched,
     markerRef: markerRef,
-    target: event.target, // Store target for scroll recalculation
+    target: event.target,
   });
 }
 
