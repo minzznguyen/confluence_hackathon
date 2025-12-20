@@ -3,11 +3,12 @@ import { rovo } from "@forge/bridge";
 /**
  * Opens the Rovo chat sidebar with the Simple Assistant agent.
  * This function is called when the Rovo agent byline item is clicked.
- * 
+ *
  * @param {string} [prompt] - Optional prompt to send to the agent when opening
  */
 export async function openRovoAgent(prompt) {
   try {
+    console.log("Thao testing 1");
     await rovo.open({
       type: "forge",
       agentName: "Simple Assistant",

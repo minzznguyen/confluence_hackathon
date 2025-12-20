@@ -1,6 +1,6 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import { useEffect } from 'react';
+import React from "react";
+import ReactDOM from "react-dom";
+import { useEffect } from "react";
 import { rovo, view } from "@forge/bridge";
 
 /**
@@ -9,12 +9,13 @@ import { rovo, view } from "@forge/bridge";
  */
 function RovoAgentOpener() {
   useEffect(() => {
+    console.log("Thao testing 1");
     const openAgent = async () => {
       try {
         await rovo.open({
           type: "forge",
-          agentName: "Simple Assistant",
-          agentKey: "simple-assistant",
+          agentName: "Thao Testing agent",
+          agentKey: "thao-testing-agent",
         });
         // Close any modal/viewport if needed
         view.close();
@@ -33,5 +34,5 @@ ReactDOM.render(
   <React.StrictMode>
     <RovoAgentOpener />
   </React.StrictMode>,
-  document.getElementById('root')
+  document.getElementById("root")
 );

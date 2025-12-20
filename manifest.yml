@@ -5,7 +5,7 @@ modules:
       resolver:
         function: resolver
       routePrefix: hello-world
-  
+
   confluence:contentBylineItem:
     - key: heatmap-content-byline
       title: Heatmap
@@ -15,6 +15,7 @@ modules:
       resolver:
         function: resolver
       viewportContainer: modal
+
   confluence:contentAction:
     - key: rovo-agent-action
       title: AI Assistant
@@ -24,38 +25,44 @@ modules:
       resolver:
         function: resolver
       viewportSize: small
-  
+
+  rovo:agent:
+    - key: thao-testing-agent
+      name: Thao Testing agent
+      description: An Agent for testing Forge agent functionality
+      prompt: >
+        You are a simple Rovo Agent that helps Forge developers build their first
+        Agent.
+
+        You can create response back to user in the chat by using the test-logger action. Basically, you respond back them whatever they send you with the prefix 'Testing message:'
+        For example, user's input is "hello", you will respond "Testing message: hello"
+
+        If the user hasn't provided a message, then you will respond back in the chat 'Hey you forgot to provide a message'.
+      conversationStarters:
+        - Response back a random message Hello World
+      actions:
+        - test-logger
+
+  action:
+    - key: test-logger
+      function: messageTestLogger
+      actionVerb: TRIGGER
+      description: >
+        When a user asks to respond a message, this action respond the message in the chat
+      inputs:
+        message:
+          title: Message
+          type: string
+          required: true
+          description: |
+            "The message that the user has requested be responded in the chat"
+
   function:
+    - key: messageTestLogger
+      handler: index.messageTestLogger
     - key: resolver
       handler: index.handler
-    - key: getGreeting
-      handler: index.getGreeting
-  rovo:agent:
-    - key: simple-assistant
-      name: Simple Assistant
-      description: A helpful assistant that can greet users and provide basic assistance
-      prompt: |
-        You are a friendly and helpful assistant.
-        You can greet users and provide basic assistance.
-        When users ask for a greeting, use the get-greeting action to provide a personalized greeting.
-      conversationStarters:
-        - Say hello
-        - Greet me
-      actions:
-        - get-greeting
-  action:
-    - key: get-greeting
-      name: Get Greeting
-      function: getGreeting
-      actionVerb: GET
-      description: |
-        Generate a personalized greeting message for the user
-      inputs:
-        userName:
-          title: User Name
-          type: string
-          required: false
-          description: The name of the user to greet (optional)
+
 resources:
   - key: main
     path: static/hello-world/build

@@ -1,12 +1,13 @@
 import { useEffect } from "react";
 import { markCommentedBlocks } from "./utils/htmlProcessing";
 import { usePageData } from "./hooks/usePageData";
-import { openRovoAgent } from "./utils/rovoAgent";
+// import { openRovoAgent } from "./utils/rovoAgent";
 import CommentRepliesChart from "./components/CommentRepliesChart";
 import Heading from "@atlaskit/heading";
 import InlineMessage from "@atlaskit/inline-message";
 import Spinner from "@atlaskit/spinner";
 import { COMMENT_STATUS, UI_LABELS } from "./constants";
+import { rovo } from "@forge/bridge";
 
 export default function App() {
   const { page, html, comments, error, isLoading } = usePageData();
@@ -42,7 +43,13 @@ export default function App() {
 
   const handleOpenRovo = async () => {
     try {
-      await openRovoAgent();
+      console.log("Thao testing 1");
+      await rovo.open({
+        type: "forge",
+        agentName: "Thao Testing agent",
+        agentKey: "thao-testing-agent",
+        prompt: "hello",
+      });
     } catch (error) {
       console.error("Failed to open Rovo agent:", error);
     }
@@ -75,8 +82,15 @@ export default function App() {
 
       <main className="conf-main">
         <div className="conf-container">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-            <button 
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "12px",
+              marginBottom: "16px",
+            }}
+          >
+            <button
               className="rovo-agent-button"
               onClick={handleOpenRovo}
               aria-label="Open AI Assistant"
