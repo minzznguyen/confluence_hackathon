@@ -2,10 +2,12 @@
 
 .conf-chart-section {
   padding: var(--conf-space-md);
+  padding-top: var(--conf-space-xl);
   background: var(--conf-color-background);
   border: 1px solid var(--conf-color-border);
   border-radius: var(--conf-radius-sm);
   box-shadow: var(--conf-shadow-sm);
+  margin-bottom: var(--conf-space-lg);
 }
 
 .conf-chart-empty {

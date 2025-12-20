@@ -31,7 +31,7 @@ export default function App() {
   }
 
   return (
-    <div className="conf-page-wrapper">
+    <>
       <input
         type="checkbox"
         id="conf-sidebar-toggle"
@@ -45,6 +45,7 @@ export default function App() {
       </label>
 
       <aside className="conf-sidebar">
+        <div className="conf-sidebar-spacer"></div>
         <div className="conf-chart-section">
           <Heading as="h2">Comment Thread Activity</Heading>
           <CommentRepliesChart
@@ -73,6 +74,6 @@ export default function App() {
         comments={popup.comments}
         onClose={onClose}
       />
-    </div>
+    </>
   );
 }
