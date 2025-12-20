@@ -28,6 +28,8 @@ export default function CommentRepliesChart({
   comments,
   status = COMMENT_STATUS.OPEN,
   maxItems = 10,
+  onBarClick,
+  isPopupVisible = false,
 }) {
   // Store ranked comments for click handler access
   const rankedCommentsRef = useRef([]);
@@ -145,15 +147,37 @@ export default function CommentRepliesChart({
 
   const chartHeight = chartOption?.height || 200;
 
-  // Handle bar clicks to scroll to corresponding comment in page
-  const onChartClick = useCallback((params) => {
-    if (params.componentType === 'series') {
-      const comment = rankedCommentsRef.current[params.dataIndex];
-      if (comment?.inlineMarkerRef) {
+  // Handle bar clicks to scroll to corresponding comment and trigger callback
+  const onChartClick = useCallback((params, event) => {
+    // Ignore clicks when popup is already visible (prevents flashing between popups)
+    if (isPopupVisible) {
+      return;
+    }
+
+    // Only handle clicks on actual bar series data
+    if (params.componentType !== 'series' || params.seriesType !== 'bar') {
+      return;
+    }
+    
+    // Ensure we have a valid data index
+    if (typeof params.dataIndex !== 'number' || params.dataIndex < 0) {
+      return;
+    }
+
+    const comment = rankedCommentsRef.current[params.dataIndex];
+    if (comment) {
+      // Scroll to the comment in the page
+      if (comment.inlineMarkerRef) {
         scrollToComment(comment.inlineMarkerRef);
       }
+      // Trigger callback to show popup (if provided)
+      if (onBarClick && comment.inlineMarkerRef) {
+        // Get click Y position for popup positioning
+        const clickY = event?.event?.offsetY || 100;
+        onBarClick(comment.inlineMarkerRef, clickY);
+      }
     }
-  }, []);
+  }, [onBarClick, isPopupVisible]);
 
   const onEvents = { click: onChartClick };
 
@@ -185,10 +209,14 @@ CommentRepliesChart.propTypes = {
   })),
   status: PropTypes.oneOf(['open']),
   maxItems: PropTypes.number,
+  onBarClick: PropTypes.func,
+  isPopupVisible: PropTypes.bool,
 };
 
 CommentRepliesChart.defaultProps = {
   comments: [],
   status: COMMENT_STATUS.OPEN,
   maxItems: 10,
+  onBarClick: null,
+  isPopupVisible: false,
 };

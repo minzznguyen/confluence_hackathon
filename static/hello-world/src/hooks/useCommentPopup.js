@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { markCommentedBlocks } from "../utils/htmlProcessing";
-import { bindInlineCommentPopup } from "../utils/commentPopup";
+import { bindInlineCommentPopup, getEnrichedCommentsForMarker } from "../utils/commentPopup";
 
 /**
  * Hook for managing inline comment popup state and event listeners.
@@ -95,9 +95,44 @@ export function useCommentPopup(html, isLoading, comments) {
     setPopup((prev) => ({ ...prev, visible: false, markerRef: null, target: null }));
   };
 
+  // Open popup for a specific marker (used by bar chart click)
+  const openPopupForMarker = async (markerRef, clickY = 100) => {
+    // Don't reopen if already showing same marker
+    const currentPopup = popupRef.current;
+    if (currentPopup.visible && currentPopup.markerRef === markerRef) return;
+    
+    if (!markerRef || !comments || comments.length === 0) return;
+
+    // Find the marker element in the DOM for positioning
+    const markerElement = document.querySelector(`[data-marker-ref="${markerRef}"]`);
+    if (!markerElement) {
+      console.warn(`[CommentPopup] Marker element not found for ref: ${markerRef}`);
+    }
+    
+    // Use shared utility to find and enrich comments
+    const enriched = await getEnrichedCommentsForMarker(markerRef, comments);
+    if (enriched.length === 0) return;
+
+    // Calculate Y position from marker element if available
+    let y = clickY;
+    if (markerElement) {
+      const rect = markerElement.getBoundingClientRect();
+      y = rect.top;
+    }
+
+    setPopup({
+      visible: true,
+      y,
+      comments: enriched,
+      markerRef,
+      target: markerElement,
+    });
+  };
+
   return {
     popup,
     onClose: handleClose,
+    openPopupForMarker,
   };
 }
 

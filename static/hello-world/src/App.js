@@ -9,7 +9,7 @@ import { COMMENT_STATUS, UI_LABELS } from "./constants";
 
 export default function App() {
   const { page, html, comments, error, isLoading } = usePageData();
-  const { popup, onClose } = useCommentPopup(html, isLoading, comments);
+  const { popup, onClose, openPopupForMarker } = useCommentPopup(html, isLoading, comments);
 
   if (error) {
     return (
@@ -52,6 +52,8 @@ export default function App() {
             comments={comments}
             status={COMMENT_STATUS.OPEN}
             maxItems={20}
+            onBarClick={openPopupForMarker}
+            isPopupVisible={popup.visible}
           />
         </div>
       </aside>
