@@ -44,24 +44,65 @@
 .conf-sidebar-toggle {
   position: fixed;
   top: var(--conf-space-lg);
-  left: var(--conf-space-lg);
-  width: 20px;
-  height: 20px;
-  padding: var(--conf-space-xs);
-  background: transparent;
-  box-shadow: none;
+  left: calc(var(--conf-sidebar-width) - var(--conf-space-lg) - 12px);
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  background: var(--conf-color-background);
+  border: 1px solid var(--conf-color-border);
+  border-radius: var(--conf-radius-sm);
+  box-shadow: var(--conf-shadow-sm);
   display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   z-index: 10;
+  transition: left 0.3s ease, background 0.2s ease;
 }
 
-.conf-sidebar-toggle span {
-  display: block;
-  height: 1px;
-  background: var(--conf-color-text-secondary);
-  border-radius: 2px;
+.conf-sidebar-toggle:hover {
+  background: var(--conf-color-background-subtle);
+}
+
+/* Left chevron - shown when sidebar is visible (uncollapsed) */
+.conf-chevron-left {
+  display: inline-block;
+  font-size: 18px;
+  font-weight: bold;
+  color: var(--conf-color-text-secondary);
+  line-height: 1;
+  transition: opacity 0.2s ease;
+  margin: 0;
+  padding: 0;
+  transform: translateY(-1px);
+  vertical-align: middle;
+}
+
+/* Right chevron - shown when sidebar is collapsed */
+.conf-chevron-right {
+  display: none;
+  font-size: 18px;
+  font-weight: bold;
+  color: var(--conf-color-text-secondary);
+  line-height: 1;
+  transition: opacity 0.2s ease;
+  margin: 0;
+  padding: 0;
+  transform: translateY(-1px);
+  vertical-align: middle;
+}
+
+/* When sidebar is collapsed, hide left chevron, show right chevron, move button to left */
+.conf-sidebar-checkbox:checked ~ .conf-sidebar-toggle {
+  left: var(--conf-space-lg);
+}
+
+.conf-sidebar-checkbox:checked ~ .conf-sidebar-toggle .conf-chevron-left {
+  display: none;
+}
+
+.conf-sidebar-checkbox:checked ~ .conf-sidebar-toggle .conf-chevron-right {
+  display: inline-block;
 }
 
 .conf-chart-section {

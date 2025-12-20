@@ -39,9 +39,8 @@ export default function App() {
         aria-label="Toggle sidebar"
       />
       <label className="conf-sidebar-toggle" htmlFor="conf-sidebar-toggle">
-        <span />
-        <span />
-        <span />
+        <span className="conf-chevron-left">‹</span> 
+        <span className="conf-chevron-right">›</span>
       </label>
 
       <aside className="conf-sidebar">
