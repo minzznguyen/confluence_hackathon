@@ -2,9 +2,6 @@ import { useEffect, useState, useRef } from "react";
 import { markCommentedBlocks } from "../utils/htmlProcessing";
 import { bindInlineCommentPopup, getEnrichedCommentsForMarker } from "../utils/commentPopup";
 
-// Debounce time to prevent popup from reopening immediately after close (ms)
-const POPUP_REOPEN_DEBOUNCE_MS = 300;
-
 /**
  * Hook for managing inline comment popup state and event listeners.
  * Handles popup visibility, position, and binding click listeners to comment markers.
@@ -94,19 +91,12 @@ export function useCommentPopup(html, isLoading, comments) {
     };
   }, [popup.visible, popup.target]);
 
-  // Track closing timestamp to prevent immediate reopen
-  const closeTimestampRef = useRef(0);
-
   const handleClose = () => {
-    closeTimestampRef.current = Date.now();
     setPopup((prev) => ({ ...prev, visible: false, markerRef: null, target: null }));
   };
 
   // Open popup for a specific marker (used by bar chart click)
   const openPopupForMarker = async (markerRef, clickY = 100) => {
-    // Prevent reopening within debounce period after close
-    if (Date.now() - closeTimestampRef.current < POPUP_REOPEN_DEBOUNCE_MS) return;
-    
     // Don't reopen if already showing same marker
     const currentPopup = popupRef.current;
     if (currentPopup.visible && currentPopup.markerRef === markerRef) return;
