@@ -37,13 +37,27 @@ export const ERROR_MESSAGES = {
 // UI Labels
 export const UI_LABELS = {
   UNTITLED_PAGE: 'Untitled Page',
+  EMPTY_COMMENT: '(empty)',
+};
+
+// Default values
+export const DEFAULT_AVATAR = 'https://wac-cdn.atlassian.com/dam/jcr:ba03a215-2f45-40f5-8540-b2015223c918/Max-R_Headshot%20(1).jpg?cdnVersion=1318';
+
+// Date Format Configuration
+export const DATE_FORMAT = {
+  LOCALE: 'en-US',
+  OPTIONS: {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  },
 };
 
 // API Endpoints (GET requests only)
 export const API_ENDPOINTS = {
   PAGE: (pageId) => `/wiki/api/v2/pages/${pageId}?body-format=storage`,
   INLINE_COMMENTS: (pageId) =>
-    `/wiki/api/v2/inline-comments?body-format=atlas_doc_format&status=current&limit=250&pageId=${pageId}`,
+    `/wiki/api/v2/inline-comments?body-format=atlas_doc_format&resolution-status=open&status=current&limit=250`,
   USER: (accountId) => `/wiki/rest/api/user?accountId=${encodeURIComponent(accountId)}`,
   ATTACHMENT: (baseUrl, pageId, filename) =>
     `${baseUrl}/wiki/download/attachments/${pageId}/${filename}?api=v2`,

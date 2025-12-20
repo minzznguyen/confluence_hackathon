@@ -4,12 +4,14 @@
   /* Colors */
   --conf-color-text: #172B4D;
   --conf-color-text-secondary: #6B778C;
+  --conf-color-text-subtle: #6B778C;
   --conf-color-background: #FFFFFF;
   --conf-color-background-subtle: #FAFBFC;
   --conf-color-background-neutral: #F4F5F7;
   --conf-color-border: #DFE1E6;
   --conf-color-border-danger: #DE350B;
   --conf-color-background-danger: #FFEBE6;
+  --conf-color-hover-yellow: #faeea9;
   
   /* Spacing (8px grid) */
   --conf-space-xs: 4px;
@@ -38,4 +40,7 @@
   /* Shadows */
   --conf-shadow-sm: 0 1px 1px rgba(9, 30, 66, 0.08);
   --conf-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.12);
+  
+  /* Popup */
+  --conf-popup-right-margin: 56px;
 }

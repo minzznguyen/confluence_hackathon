@@ -1,7 +1,7 @@
-import { useEffect } from "react";
-import { markCommentedBlocks } from "./utils/htmlProcessing";
 import { usePageData } from "./hooks/usePageData";
+import { useCommentPopup } from "./hooks/useCommentPopup";
 import CommentRepliesChart from "./components/CommentRepliesChart";
+import CommentPopup from "./components/CommentPopup";
 import Heading from "@atlaskit/heading";
 import InlineMessage from "@atlaskit/inline-message";
 import Spinner from "@atlaskit/spinner";
@@ -9,16 +9,7 @@ import { COMMENT_STATUS, UI_LABELS } from "./constants";
 
 export default function App() {
   const { page, html, comments, error, isLoading } = usePageData();
-
-  // Mark block elements containing inline comments after HTML renders
-  // Uses requestAnimationFrame to ensure DOM is ready before querying elements
-  useEffect(() => {
-    if (!html || isLoading) return;
-    const rafId = requestAnimationFrame(() => {
-      markCommentedBlocks();
-    });
-    return () => cancelAnimationFrame(rafId);
-  }, [html, isLoading]);
+  const { popup, onClose } = useCommentPopup(html, isLoading, comments);
 
   if (error) {
     return (
@@ -75,6 +66,13 @@ export default function App() {
           />
         </div>
       </main>
+
+      <CommentPopup
+        visible={popup.visible}
+        y={popup.y}
+        comments={popup.comments}
+        onClose={onClose}
+      />
     </div>
   );
 }
