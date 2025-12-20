@@ -1,3 +1,4 @@
+import { useState, useCallback, useEffect, useRef } from "react";
 import { formatCommentDate, getAvatarUrl } from "../utils/commentPopup";
 import { buildCommentTree, getCommentBody } from "../utils/commentRanking";
 import Button from '@atlaskit/button/new';
@@ -74,6 +75,64 @@ function CommentItem({ comment, depth = 0, showCloseButton = false, onClose }) {
 }
 
 export default function CommentPopup({ visible, y, comments = [], onClose }) {
+  // Drag state - offset from initial position
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStartRef = useRef({ mouseX: 0, mouseY: 0, offsetX: 0, offsetY: 0 });
+
+  // Reset drag offset when popup changes (new comment selected)
+  useEffect(() => {
+    setDragOffset({ x: 0, y: 0 });
+  }, [comments]);
+
+  const handleMouseDown = useCallback((e) => {
+    // Only start drag on left mouse button
+    if (e.button !== 0) return;
+    
+    e.preventDefault();
+    setIsDragging(true);
+    
+    // Store initial mouse position and current offset
+    dragStartRef.current = {
+      mouseX: e.clientX,
+      mouseY: e.clientY,
+      offsetX: dragOffset.x,
+      offsetY: dragOffset.y,
+    };
+  }, [dragOffset]);
+
+  const handleMouseMove = useCallback((e) => {
+    if (!isDragging) return;
+    
+    const deltaX = e.clientX - dragStartRef.current.mouseX;
+    const deltaY = e.clientY - dragStartRef.current.mouseY;
+    
+    setDragOffset({
+      x: dragStartRef.current.offsetX + deltaX,
+      y: dragStartRef.current.offsetY + deltaY,
+    });
+  }, [isDragging]);
+
+  const handleMouseUp = useCallback(() => {
+    setIsDragging(false);
+  }, []);
+
+  // Add/remove global mouse event listeners for drag
+  useEffect(() => {
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      // Prevent text selection during drag
+      document.body.style.userSelect = 'none';
+    }
+    
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      document.body.style.userSelect = '';
+    };
+  }, [isDragging, handleMouseMove, handleMouseUp]);
+
   if (!visible || !comments || comments.length === 0) {
     return null;
   }
@@ -87,12 +146,24 @@ export default function CommentPopup({ visible, y, comments = [], onClose }) {
 
   return (
     <div
-      className="conf-comment-popup"
+      className={`conf-comment-popup ${isDragging ? 'conf-popup-dragging' : ''}`}
       style={{
-        top: `${y}px`,
+        top: `${y + dragOffset.y}px`,
+        right: `calc(var(--conf-popup-right-margin, 56px) - ${dragOffset.x}px)`,
       }}
       onClick={(e) => e.stopPropagation()}
     >
+      {/* Drag handle header */}
+      <div 
+        className="conf-popup-drag-handle"
+        onMouseDown={handleMouseDown}
+        role="button"
+        aria-label="Drag to reposition popup"
+        tabIndex={0}
+      >
+        <span className="conf-popup-drag-icon" aria-hidden="true">⋮⋮</span>
+      </div>
+      
       <div className="conf-popup-content">
         {roots.map((comment, index) => (
           <CommentItem
