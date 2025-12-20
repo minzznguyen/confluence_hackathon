@@ -1,20 +1,20 @@
 modules:
-  confluence:fullPage:
+  confluence:spacePage:
     - key: confluence-hackathon-full-page
+      title: Space Page
       resource: main
       resolver:
         function: resolver
-      routePrefix: hello-world
+      route: hello-world
   
   confluence:contentBylineItem:
-    - key: heatmap-content-byline
-      title: Heatmap
-      tooltip: Click to view heatmap
+    - key: metadata-content-byline
+      title: Metadata
       icon: https://developer.atlassian.com/platform/forge/images/icons/issue.svg
       resource: main
       resolver:
         function: resolver
-      viewportContainer: modal
+      viewportContainer: popup
   
   function:
     - key: resolver

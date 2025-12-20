@@ -1,14 +1,14 @@
 import { useState, useCallback, useEffect } from 'react';
 import { view } from "@forge/bridge";
-import { navigateToFullPage } from "../utils/navigation";
+import { extractAndStorePageContext } from "../utils/navigation";
 import { loadPage } from "../utils/pageLoader";
 import { CONFLUENCE_MODULES, ERROR_MESSAGES } from "../constants";
 import { useSafeAsync } from "./useSafeAsync";
 
 /**
  * Hook for managing page data loading with safe async operations.
- * Automatically handles byline item extension context by navigating to full page view.
- * For full page context, loads page content, converts HTML, and fetches inline comments.
+ * Automatically stores page context and loads page metadata when loaded from byline item extension.
+ * For space page context, loads page content, converts HTML, and fetches inline comments.
  * 
  * @returns {Object} Object containing page, html, comments, error, isLoading, and loadPageData
  */
@@ -35,9 +35,8 @@ export function usePageData() {
       const context = await view.getContext();
       const type = context.extension?.type;
 
-      // If loaded from byline item extension, navigate to full page and close
-      if (type === CONFLUENCE_MODULES.CONTENT_BYLINE_ITEM) {
-        await navigateToFullPage(context);
+      if (type === CONFLUENCE_MODULES.CONTENT_BYLINE_ITEM) {        
+        await extractAndStorePageContext(context);
         view.close();
         return;
       }
