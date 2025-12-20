@@ -3,6 +3,12 @@
 // Confluence Modules
 export const CONFLUENCE_MODULES = {
   CONTENT_BYLINE_ITEM: 'confluence:contentBylineItem',
+  SPACE_PAGE: 'confluence:spacePage',
+};
+
+// LocalStorage Keys
+export const STORAGE_KEYS = {
+  PAGE_CONTEXT: 'forge_page_context',
 };
 
 // Comment Status Values
