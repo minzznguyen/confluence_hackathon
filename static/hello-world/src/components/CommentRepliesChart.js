@@ -56,6 +56,7 @@ export default function CommentRepliesChart({
     const tooltipLabels = reversed.map((node) => getCommentBody(node, 40));
     const data = reversed.map((node) => node.threadCount);
     const replyCounts = reversed.map((node) => node.threadCount - 1);
+    const participantCounts = reversed.map((node) => node.participantCount || 0);
     // Dynamic height based on number of items (32px per item + padding)
     const dynamicHeight = Math.max(200, topComments.length * 32 + 60);
 
@@ -77,7 +78,8 @@ export default function CommentRepliesChart({
           const item = params[0];
           const tooltip = tooltipLabels[item.dataIndex];
           const replyCount = replyCounts[item.dataIndex];
-          return `<span style="color:${COLORS.N200}">${tooltip}</span><br/><strong>${replyCount}</strong> ${replyCount === 1 ? 'reply' : 'replies'}`;
+          const participantCount = participantCounts[item.dataIndex];
+          return `<span style="color:${COLORS.N200}">${tooltip}</span><br/><strong>${replyCount}</strong> ${replyCount === 1 ? 'reply' : 'replies'}<br/><strong>${participantCount}</strong> ${participantCount === 1 ? 'participant' : 'participants'}`;
         },
       },
       grid: {
