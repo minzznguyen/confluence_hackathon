@@ -1,62 +1,44 @@
-/**
- * Forge Backend Resolver
- * Defines serverless functions invokable from the frontend via @forge/bridge.
- */
-
 import Resolver from "@forge/resolver";
-// import { getInlineComments } from "../static/hello-world/src/api/confluence";
-// import {
-//   rankParentsByReplies,
-//   getCommentLabel,
-// } from "../static/hello-world/src/utils/commentRanking";
+import api, { route } from "@forge/api";
+import { rankParentsByReplies } from "../static/hello-world/src/utils/commentRanking";
+import { COMMENT_STATUS } from "../static/hello-world/src/constants";
+import { getCommentBody } from "../static/hello-world/src/utils/commentRanking";
+
+async function getInlineComments(pageId) {
+  const res = await api
+    .asApp()
+    .requestConfluence(
+      route`/wiki/api/v2/inline-comments?body-format=atlas_doc_format&resolution-status=open&status=current&limit=250`
+    );
+
+  const data = await res.json();
+
+  if (!data || !Array.isArray(data.results)) {
+    return [];
+  }
+  return data.results.filter((comment) => comment?.pageId === pageId);
+}
 
 const resolver = new Resolver();
 
-// Add resolver functions here if needed in the future
-
 export const handler = resolver.getDefinitions();
 
-export function getConfluenceComments(message) {
-  // const comments = getInlineComments("1900549");
-  // console.log("Thao testing comments in getConfluenceComments:", comments);
-  // return comments;
-  console.log("Thao testing getConfluenceComments!");
-  const comments = [
-    {
-      commentId: "1",
-      content: "Thao testing 1",
-      replies: 2,
-    },
-    {
-      commentId: "2",
-      content: "Thao testing 2",
-      replies: 0,
-    },
-  ];
+export async function getConfluenceComments(message) {
+  const comments = await getInlineComments("1900549");
 
-  return JSON.stringify(comments);
-}
+  const ranked = rankParentsByReplies(comments, {
+    status: COMMENT_STATUS.OPEN,
+  });
+  const topComment = ranked.slice(0, 1)[0];
+  const inlineRef = topComment.inlineMarkerRef; // IMPORTANT
+  const title = topComment.inlineOriginalSelection;
+  const parentCommentText = getCommentBody(topComment);
+  const children = topComment.children;
+  const childrenCommentTexts = [title, parentCommentText];
 
-export function countReplies(comments) {
-  console.log("Thao testing comments:", comments);
-  console.log("Thao testing comments:", comments.comments);
-
-  // const ranked = rankParentsByReplies(comments, {
-  //   status: COMMENT_STATUS.OPEN,
-  // });
-  // const topComment = ranked.slice(0, 1)[0];
-  // const text = getCommentLabel(topComment, 100);
-  // return text;
-  // Find the comment with the most replies
-  const parsedComments = JSON.parse(comments.comments);
-  let topComment = parsedComments[0];
-
-  for (const comment of parsedComments) {
-    if (comment.replies > topComment.replies) {
-      topComment = comment;
-    }
+  for (const child of children) {
+    childrenCommentTexts.push(getCommentBody(child));
   }
 
-  // Return only the content
-  return topComment.content;
+  return JSON.stringify(childrenCommentTexts);
 }

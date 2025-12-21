@@ -33,20 +33,19 @@ modules:
 
         Identify sections of the page with high comment activity and highlight the main topics being actively discussed.
         To do this, follow these steps:
-        - Call the getConfluenceComments function to get back all the comments for the current Confluence page
-        - Count the section that has the most replies with the countReplies function
-        - Return back the user what is returned from the countReplies function
+        - Call the getConfluenceComments function to get back all the hottest comments for the current Confluence page
+        - From the response of the getConfluenceComments function above, can you help me point to the text that the hottest comments start (the first item in the array returned from the getConfluenceComments function) and summarize what the hottest section in this Confluence doc is about?
 
       conversationStarters:
         # - What does this heatmap show?
-        - Which sections are most discussed for the current Confluence page?
+        - What section of this Confluence page has the most discussion?
         # - Where should I focus my review?
         # - Are there any unresolved or active discussions?
         # - What are people mainly commenting about?
       actions:
         # - fetch-heatmap-data
         - get-confluence-comments
-        - count-replies
+        # - count-replies
         # - fetch-unresolved-comments
 
   action:
@@ -63,25 +62,25 @@ modules:
           description: |
             "Message from user that is asking about what sections are most discussed in this Confluence page"
 
-    - key: count-replies
-      function: countReplies
-      actionVerb: GET
-      description: >
-        Check the replies of each comment and return the content of the comment with the most replies
-      inputs:
-        comments:
-          title: Comments
-          type: string
-          required: true
-          description: |
-            "All the comments objects for this current Confluence page"
+    # - key: count-replies
+    #   function: countReplies
+    #   actionVerb: GET
+    #   description: >
+    #     Check the replies of each comment and return the content of the comment with the most replies
+    #   inputs:
+    #     comments:
+    #       title: Comments
+    #       type: string
+    #       required: true
+    #       description: |
+    #         "All the comments objects for this current Confluence page"
   function:
     - key: resolver
       handler: index.handler
     - key: getConfluenceComments
       handler: index.getConfluenceComments
-    - key: countReplies
-      handler: index.countReplies
+    # - key: countReplies
+    #   handler: index.countReplies
 
 resources:
   - key: main
