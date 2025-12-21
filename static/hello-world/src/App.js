@@ -52,6 +52,7 @@ export default function App() {
             status={COMMENT_STATUS.OPEN}
             maxItems={20}
             onBarClick={openPopupForMarker}
+            isPopupVisible={popup.visible}
           />
         </div>
       </aside>

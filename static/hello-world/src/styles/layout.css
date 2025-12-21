@@ -20,8 +20,10 @@
   top: 0;
   left: 0;
   height: 100vh;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
   z-index: 5;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .conf-sidebar-spacer {
@@ -124,4 +126,19 @@
 /* Remove left margin from main content when sidebar is hidden */
 .conf-sidebar-checkbox:checked ~ .conf-main {
   margin-left: 0;
+}
+
+/* Responsive Design - Tablet and below: Hide sidebar completely */
+@media (max-width: 1024px) {
+  .conf-sidebar {
+    display: none;
+  }
+
+  .conf-main {
+    margin-left: 0;
+  }
+
+  .conf-sidebar-toggle {
+    display: none;
+  }
 }
