@@ -16,12 +16,9 @@
   padding: var(--conf-space-2xl) var(--conf-space-lg);
   background: var(--conf-color-background-subtle);
   border-right: 1px solid var(--conf-color-border);
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 100vh;
-  overflow-y: auto;
-  overflow-x: hidden;
+  position: relative;
+  float: left;
+  min-height: 100vh;
   z-index: 5;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
@@ -36,6 +33,7 @@
   padding-left: var(--conf-space-xl);
   min-height: 100vh;
   position: relative;
+  overflow: hidden;
 }
 
 .conf-loading-container {
@@ -45,10 +43,10 @@
 }
 
 .conf-sidebar-toggle {
-  position: fixed;
+  position: absolute;
   top: var(--conf-space-lg);
-  /* Position button near the right edge of sidebar: sidebar width - small offset - button width */
-  left: calc(var(--conf-sidebar-width));
+  /* Position button at the right edge of sidebar */
+  left: calc(var(--conf-sidebar-width) - 12px);
   width: 24px;
   height: 24px;
   padding: 0;
@@ -98,7 +96,7 @@
 
 /* When sidebar is collapsed, hide left chevron, show right chevron, move button to left */
 .conf-sidebar-checkbox:checked ~ .conf-sidebar-toggle {
-  left: var(--conf-space-lg);
+  left: calc(var(--conf-sidebar-width) - 12px);
 }
 
 .conf-sidebar-checkbox:checked ~ .conf-sidebar-toggle .conf-chevron-left {
@@ -116,7 +114,7 @@
 }
 
 .conf-sidebar-checkbox {
-  position: fixed;
+  position: absolute;
   opacity: 0;
   pointer-events: none;
 }
