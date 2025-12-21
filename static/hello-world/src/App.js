@@ -1,11 +1,11 @@
 import { usePageData } from "./hooks/usePageData";
 import { useCommentPopup } from "./hooks/useCommentPopup";
-import CommentRepliesChart from "./components/CommentRepliesChart";
+import CommentActivitySidebar from "./components/CommentActivitySidebar";
 import CommentPopup from "./components/CommentPopup";
 import Heading from "@atlaskit/heading";
 import InlineMessage from "@atlaskit/inline-message";
 import Spinner from "@atlaskit/spinner";
-import { COMMENT_STATUS, UI_LABELS } from "./constants";
+import { UI_LABELS } from "./constants";
 
 export default function App() {
   const { page, html, comments, error, isLoading } = usePageData();
@@ -32,29 +32,10 @@ export default function App() {
 
   return (
     <>
-      <input
-        type="checkbox"
-        id="conf-sidebar-toggle"
-        className="conf-sidebar-checkbox"
-        aria-label="Toggle sidebar"
+      <CommentActivitySidebar
+        comments={comments}
+        onBarClick={openPopupForMarker}
       />
-      <label className="conf-sidebar-toggle" htmlFor="conf-sidebar-toggle">
-        <span className="conf-chevron-left">‹</span> 
-        <span className="conf-chevron-right">›</span>
-      </label>
-
-      <aside className="conf-sidebar">
-        <div className="conf-sidebar-spacer"></div>
-        <div className="conf-chart-section">
-          <Heading as="h2">Comment Thread Activity</Heading>
-          <CommentRepliesChart
-            comments={comments}
-            status={COMMENT_STATUS.OPEN}
-            maxItems={20}
-            onBarClick={openPopupForMarker}
-          />
-        </div>
-      </aside>
 
       <main className="conf-main">
         <div className="conf-container">

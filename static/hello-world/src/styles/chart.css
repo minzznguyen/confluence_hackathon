@@ -16,3 +16,38 @@
   color: var(--conf-color-text-secondary);
   font-size: var(--conf-font-size-sm);
 }
+
+/* Responsive chart styling - progressively reduce padding and spacing on smaller screens */
+
+/* Medium screens: Reduce chart section padding */
+@media (max-width: 1200px) {
+  .conf-chart-section {
+    padding: var(--conf-space-sm);
+    padding-top: var(--conf-space-lg);
+    margin-bottom: var(--conf-space-md);
+  }
+
+  .conf-chart-section h2 {
+    font-size: 18px;
+    margin-bottom: var(--conf-space-md);
+  }
+}
+
+/* Smaller screens: Further reduce padding for compact display */
+@media (max-width: 1024px) {
+  .conf-chart-section {
+    padding: var(--conf-space-xs);
+    padding-top: var(--conf-space-md);
+    margin-bottom: var(--conf-space-sm);
+  }
+
+  .conf-chart-section h2 {
+    font-size: 16px;
+    margin-bottom: var(--conf-space-sm);
+  }
+
+  /* Target echarts container for font size reduction via CSS */
+  .conf-chart-section canvas {
+    max-width: 100%;
+  }
+}

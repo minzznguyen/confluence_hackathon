@@ -33,6 +33,7 @@
 
 .conf-main {
   margin-left: var(--conf-sidebar-width);
+  padding-left: var(--conf-space-xl);
   min-height: 100vh;
   position: relative;
 }
@@ -46,7 +47,8 @@
 .conf-sidebar-toggle {
   position: fixed;
   top: var(--conf-space-lg);
-  left: calc(var(--conf-sidebar-width) - var(--conf-space-lg) - 12px);
+  /* Align button right edge with chart right edge: sidebar width - sidebar right padding - chart right padding - button width */
+  left: calc(var(--conf-sidebar-width) - var(--conf-space-lg) - var(--conf-space-md) - 24px);
   width: 24px;
   height: 24px;
   padding: 0;
@@ -128,14 +130,71 @@
   margin-left: 0;
 }
 
-/* Responsive Design - Tablet and below: Hide sidebar completely */
+/* Responsive Design - Progressive sidebar width reduction */
+
+/* Medium screens (1024px - 1200px): Reduce sidebar to 240px for more compact view */
+@media (max-width: 1200px) {
+  .conf-sidebar {
+    width: 240px;
+    padding: var(--conf-space-xl) var(--conf-space-md);
+  }
+
+  .conf-main {
+    margin-left: 240px;
+    padding-left: var(--conf-space-md);
+  }
+
+  .conf-sidebar-toggle {
+    /* Align with chart right edge: sidebar width (240px) - sidebar right padding (var(--conf-space-md) = 16px) - chart right padding (var(--conf-space-sm) = 8px) - button width (24px) */
+    left: calc(240px - var(--conf-space-md) - var(--conf-space-sm) - 24px);
+  }
+
+  .conf-sidebar-checkbox:checked ~ .conf-main {
+    margin-left: 0;
+  }
+
+  /* Compact chart styling for medium screens */
+  .conf-chart-section h2 {
+    font-size: 18px;
+  }
+}
+
+/* Smaller screens (768px - 1024px): Further reduce sidebar to 200px */
 @media (max-width: 1024px) {
+  .conf-sidebar {
+    width: 200px;
+    padding: var(--conf-space-lg) var(--conf-space-sm);
+  }
+
+  .conf-main {
+    margin-left: 200px;
+    padding-left: var(--conf-space-sm);
+  }
+
+  .conf-sidebar-toggle {
+    /* Align with chart right edge: sidebar width (200px) - sidebar right padding (var(--conf-space-sm) = 8px) - chart right padding (var(--conf-space-xs) = 4px) - button width (24px) */
+    left: calc(200px - var(--conf-space-sm) - var(--conf-space-xs) - 24px);
+  }
+
+  .conf-sidebar-checkbox:checked ~ .conf-main {
+    margin-left: 0;
+  }
+
+  /* More compact chart styling */
+  .conf-chart-section h2 {
+    font-size: 16px;
+  }
+}
+
+/* Mobile screens (< 768px): Hide sidebar completely for maximum content space */
+@media (max-width: 768px) {
   .conf-sidebar {
     display: none;
   }
 
   .conf-main {
     margin-left: 0;
+    padding-left: 0;
   }
 
   .conf-sidebar-toggle {
