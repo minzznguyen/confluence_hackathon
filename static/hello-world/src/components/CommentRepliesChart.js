@@ -29,7 +29,6 @@ export default function CommentRepliesChart({
   status = COMMENT_STATUS.OPEN,
   maxItems = 10,
   onBarClick,
-  isPopupVisible = false,
 }) {
   // Store ranked comments for click handler access
   const rankedCommentsRef = useRef([]);
@@ -151,11 +150,6 @@ export default function CommentRepliesChart({
 
   // Handle bar clicks to scroll to corresponding comment and trigger callback
   const onChartClick = useCallback((params, event) => {
-    // Ignore clicks when popup is already visible (prevents flashing between popups)
-    if (isPopupVisible) {
-      return;
-    }
-
     // Only handle clicks on actual bar series data
     if (params.componentType !== 'series' || params.seriesType !== 'bar') {
       return;
@@ -174,12 +168,10 @@ export default function CommentRepliesChart({
       }
       // Trigger callback to show popup (if provided)
       if (onBarClick && comment.inlineMarkerRef) {
-        // Get click Y position for popup positioning
-        const clickY = event?.event?.offsetY || 100;
-        onBarClick(comment.inlineMarkerRef, clickY);
+        onBarClick(comment.inlineMarkerRef);
       }
     }
-  }, [onBarClick, isPopupVisible]);
+  }, [onBarClick]);
 
   const onEvents = { click: onChartClick };
 
@@ -212,7 +204,6 @@ CommentRepliesChart.propTypes = {
   status: PropTypes.oneOf(['open']),
   maxItems: PropTypes.number,
   onBarClick: PropTypes.func,
-  isPopupVisible: PropTypes.bool,
 };
 
 CommentRepliesChart.defaultProps = {
@@ -220,5 +211,4 @@ CommentRepliesChart.defaultProps = {
   status: COMMENT_STATUS.OPEN,
   maxItems: 10,
   onBarClick: null,
-  isPopupVisible: false,
 };

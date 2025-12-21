@@ -35,6 +35,44 @@
   flex-shrink: 0;
 }
 
+/* Drag handle for popup repositioning */
+.conf-popup-drag-handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 20px;
+  background: #f4f5f7;
+  border-bottom: 1px solid #dfe1e6;
+  cursor: grab;
+  user-select: none;
+  border-radius: 3px 3px 0 0;
+}
+
+.conf-popup-drag-handle:hover {
+  background: #ebecf0;
+}
+
+.conf-popup-drag-handle:active {
+  cursor: grabbing;
+}
+
+.conf-popup-drag-icon {
+  color: #6b778c;
+  font-size: 12px;
+  letter-spacing: 2px;
+}
+
+/* Style adjustments while dragging */
+.conf-comment-popup.conf-popup-dragging {
+  opacity: 0.9;
+  box-shadow: 0 8px 16px rgba(9, 30, 66, 0.35);
+}
+
+.conf-popup-dragging .conf-popup-drag-handle {
+  cursor: grabbing;
+  background: #ebecf0;
+}
+
 .conf-popup-content {
   padding: 8px 0;
   overflow-y: auto;
@@ -153,4 +191,33 @@
 .conf-inline-comment.comment-rank-2:hover,
 .conf-inline-comment.comment-rank-3:hover {
   background-color: var(--conf-color-hover-yellow) !important;
+}
+
+/* Focus effect when popup is open - overlay dims everything except active comment */
+body.conf-popup-open .conf-main::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  /* Fallback for browsers without backdrop-filter support (higher opacity) */
+  background: rgba(255, 255, 255, 0.85);
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Enhanced effect for browsers that support backdrop-filter */
+@supports (backdrop-filter: blur(2px)) {
+  body.conf-popup-open .conf-main::before {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(2px);
+  }
+}
+
+/* Keep active commented block fully visible and elevated above overlay */
+.conf-has-comment-active {
+  position: relative;
+  z-index: 2;
+  background: var(--conf-color-background, #ffffff);
 }
