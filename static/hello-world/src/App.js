@@ -1,6 +1,7 @@
 import { usePageData } from "./hooks/usePageData";
 import { useCommentPopup } from "./hooks/useCommentPopup";
 import CommentRepliesChart from "./components/CommentRepliesChart";
+import CommentsByUserChart from "./components/CommentsByUserChart";
 import CommentPopup from "./components/CommentPopup";
 import Heading from "@atlaskit/heading";
 import InlineMessage from "@atlaskit/inline-message";
@@ -46,12 +47,20 @@ export default function App() {
       <aside className="conf-sidebar">
         <div className="conf-sidebar-spacer"></div>
         <div className="conf-chart-section">
-          <Heading as="h2">Comment Thread Activity</Heading>
+          <Heading as="h4">Number of Comments by Thread</Heading>
           <CommentRepliesChart
             comments={comments}
             status={COMMENT_STATUS.OPEN}
             maxItems={20}
             onBarClick={openPopupForMarker}
+          />
+        </div>
+        <div className="conf-chart-section">
+          <Heading as="h4">Number of Comments by Author</Heading>
+          <CommentsByUserChart
+            comments={comments}
+            status={COMMENT_STATUS.OPEN}
+            maxItems={10}
           />
         </div>
       </aside>

@@ -2,17 +2,23 @@ import React, { useMemo, useCallback, useRef } from 'react';
 import PropTypes from 'prop-types';
 import ReactECharts from 'echarts-for-react';
 import { rankParentsByReplies, getCommentLabel, getCommentBody } from '../utils/commentRanking';
+import { calculateScore } from '../utils/colorStrip';
 import { scrollToComment } from '../utils/htmlProcessing';
 import { COMMENT_STATUS } from '../constants';
 
 // Atlassian Design System color palette
 const COLORS = {
-  B400: '#0052CC', // Primary blue
-  B300: '#0065FF',
-  B100: '#4C9AFF',
   N800: '#172B4D',
   N200: '#6B778C',
   N40: '#DFE1E6',
+};
+
+// Comment rank colors matching inline comment highlighting (from comments.css)
+const RANK_COLORS = {
+  0: { normal: '#ffebe6', emphasis: '#ffd6cc' }, // Lightest - lowest reply count
+  1: { normal: '#ffccc7', emphasis: '#ffb3ad' },
+  2: { normal: '#ff9a90', emphasis: '#ff8076' },
+  3: { normal: '#ff6b61', emphasis: '#ff5147' }, // Darkest - highest reply count
 };
 
 /**
@@ -48,14 +54,23 @@ export default function CommentRepliesChart({
       return null;
     }
 
+    // Calculate scores for color ranking (based on position in sorted array)
+    const scoredComments = calculateScore(topComments);
+
     // Reverse order for display (most replies at top of chart)
-    const reversed = [...topComments].reverse();
+    const reversed = [...scoredComments].reverse();
     rankedCommentsRef.current = reversed;
 
     // Prepare chart data: labels (selected text), tooltips (comment body), and values (thread counts)
     const labels = reversed.map((node) => getCommentLabel(node, 20));
     const tooltipLabels = reversed.map((node) => getCommentBody(node, 40));
-    const data = reversed.map((node) => node.threadCount);
+    // Each data point includes value and itemStyle for individual bar coloring
+    const data = reversed.map((node) => ({
+      value: node.threadCount,
+      itemStyle: {
+        color: RANK_COLORS[node.score]?.normal || RANK_COLORS[0].normal,
+      },
+    }));
     const replyCounts = reversed.map((node) => node.threadCount - 1);
     const participantCounts = reversed.map((node) => node.participantCount || 0);
     // Dynamic height based on number of items (32px per item + padding)
@@ -131,13 +146,7 @@ export default function CommentRepliesChart({
           data: data,
           barWidth: 16,
           itemStyle: {
-            color: COLORS.B400,
             borderRadius: [0, 3, 3, 0],
-          },
-          emphasis: {
-            itemStyle: {
-              color: COLORS.B300,
-            },
           },
           label: {
             show: true,
@@ -145,7 +154,7 @@ export default function CommentRepliesChart({
             color: COLORS.N200,
             fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
             fontSize: 11,
-            formatter: '{c}',
+            formatter: (params) => params.value,
           },
         },
       ],
