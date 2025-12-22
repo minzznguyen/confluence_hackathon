@@ -51,7 +51,6 @@ export default function App() {
           <CommentRepliesChart
             comments={comments}
             status={COMMENT_STATUS.OPEN}
-            maxItems={20}
             onBarClick={openPopupForMarker}
           />
         </div>
@@ -60,7 +59,6 @@ export default function App() {
           <CommentsByUserChart
             comments={comments}
             status={COMMENT_STATUS.OPEN}
-            maxItems={10}
           />
         </div>
       </aside>
