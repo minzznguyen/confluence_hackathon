@@ -35,6 +35,7 @@ html, body {
   min-height: 100vh;
   position: relative;
   width: 100%;
+  transition: margin-left 0.3s ease;
 }
 
 /* Sidebar - hidden by default, shown as overlay when toggled */
@@ -79,11 +80,6 @@ html, body {
 /* When checkbox is checked, show sidebar */
 .conf-sidebar-checkbox:checked ~ .conf-sidebar {
   transform: translateX(0);
-}
-
-/* Overlay behind sidebar when open (mobile/tablet) */
-.conf-sidebar-checkbox:checked ~ .conf-sidebar-overlay {
-  display: block;
 }
 
 /* Toggle button - always visible */
