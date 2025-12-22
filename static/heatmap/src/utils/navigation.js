@@ -10,7 +10,8 @@ import { CONFLUENCE_MODULES } from "../constants";
  * @param {string} [context.extension.content.id] - Page ID from extension content
  */
 export async function navigateToFullPage(context) {
-  if (context.extension?.type !== CONFLUENCE_MODULES.CONTENT_BYLINE_ITEM) return;
+  if (context.extension?.type !== CONFLUENCE_MODULES.CONTENT_BYLINE_ITEM)
+    return;
 
   const pageId = context.extension?.content?.id;
 
@@ -22,19 +23,25 @@ export async function navigateToFullPage(context) {
   let appId;
   const localId = fullContext.localId;
   if (localId) {
-    const match = localId.match(/ari-cloud-ecosystem--extension-([^-/]+-[^-/]+-[^-/]+-[^-/]+-[^-/]+)-/);
+    const match = localId.match(
+      /ari-cloud-ecosystem--extension-([^-/]+-[^-/]+-[^-/]+-[^-/]+-[^-/]+)-/
+    );
     if (match && match[1]) {
       appId = match[1];
     }
   }
 
   if (!appId) {
-    throw new Error("Could not extract app ID from localId 2. Navigation aborted.");
+    throw new Error(
+      "Could not extract app ID from localId 2. Navigation aborted."
+    );
   }
   if (!envId) {
-    throw new Error("Could not extract environment ID from Forge context. Navigation aborted.");
+    throw new Error(
+      "Could not extract environment ID from Forge context. Navigation aborted."
+    );
   }
 
-  const params = pageId ? `?pageId=${pageId}` : '';
-  router.open(`/forge-apps/a/${appId}/e/${envId}/r/hello-world${params}`);
+  const params = pageId ? `?pageId=${pageId}` : "";
+  router.open(`/forge-apps/a/${appId}/e/${envId}/r/heatmap${params}`);
 }
