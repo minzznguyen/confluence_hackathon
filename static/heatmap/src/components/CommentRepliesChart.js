@@ -1,27 +1,15 @@
 import React, { useMemo, useCallback, useRef, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import ReactECharts from 'echarts-for-react';
-import { rankParentsByReplies, getCommentLabel, findMostCommentedUser } from '../utils/commentRanking';
-import { calculateScore } from '../utils/colorStrip';
+import { rankParentsByReplies, findMostCommentedUser } from '../utils/commentRanking';
 import { scrollToComment } from '../utils/htmlProcessing';
-import { getUserInfo } from '../api/confluence';
-import { getAvatarUrl } from '../utils/commentPopup';
+import { userCache } from '../utils/userCache';
+import { 
+  calculateBaseChartData, 
+  createTooltipFormatter, 
+  createCommentRepliesChartOption 
+} from '../utils/chartUtils';
 import { COMMENT_STATUS } from '../constants';
-
-// Atlassian Design System color palette
-const COLORS = {
-  N800: '#172B4D',
-  N200: '#6B778C',
-  N40: '#DFE1E6',
-};
-
-// Comment rank colors matching inline comment highlighting (from comments.css)
-const RANK_COLORS = {
-  0: { normal: '#f5ec8e', emphasis: '#f9e85a' }, // Lightest - lowest reply count (yellow)
-  1: { normal: '#f7b457', emphasis: '#f4a030' }, // Light-medium (orange)
-  2: { normal: '#FE7440', emphasis: '#FE5A1A' }, // Medium-dark (darker orange)
-  3: { normal: '#FE2923', emphasis: '#E01A1A' }, // Darkest - highest reply count (red)
-};
 
 /**
  * Horizontal bar chart displaying comment threads ranked by thread size.
@@ -44,13 +32,29 @@ export default function CommentRepliesChart({
   const [mostCommentedUserInfo, setMostCommentedUserInfo] = useState([]);
 
   // Calculate most commented user for each thread and fetch display names
+  // Memoized to prevent recalculation when user info loads
   const topCommentsForEnrichment = useMemo(() => {
     if (!comments || comments.length === 0) return [];
     const ranked = rankParentsByReplies(comments, { status });
     return ranked.slice(0, maxItems);
   }, [comments, status, maxItems]);
 
-  // Fetch display names and avatar URLs for most commented users
+  // Memoize base chart data (labels, values, colors) - doesn't depend on user info
+  // This prevents chart re-render when user info loads
+  const baseChartData = useMemo(() => {
+    const chartData = calculateBaseChartData(comments, status, maxItems);
+    
+    // Update ref with reversed comments for click handler access
+    if (chartData) {
+      rankedCommentsRef.current = chartData.reversedComments || [];
+    } else {
+      rankedCommentsRef.current = [];
+    }
+    
+    return chartData;
+  }, [comments, status, maxItems]);
+
+  // Fetch display names and avatar URLs for most commented users using cache
   useEffect(() => {
     if (topCommentsForEnrichment.length === 0) {
       setMostCommentedUserInfo([]);
@@ -62,181 +66,37 @@ export default function CommentRepliesChart({
     // Calculate most commented user for each thread
     const mostCommentedUserIds = topCommentsForEnrichment.map(node => findMostCommentedUser(node));
 
-    // Fetch user info (display name and avatar) for unique user IDs
-    const uniqueUserIds = [...new Set(mostCommentedUserIds.filter(id => id !== null))];
-    
-    Promise.all(
-      uniqueUserIds.map(async (userId) => {
-        try {
-          const user = await getUserInfo(userId);
-          return { 
-            userId, 
-            displayName: user?.displayName || 'Unknown User',
-            avatarUrl: getAvatarUrl(user)
-          };
-        } catch {
-          return { 
-            userId, 
-            displayName: 'Unknown User',
-            avatarUrl: null
-          };
+    // Use cache service to fetch user info efficiently (deduplicates and caches)
+    userCache.getMultipleEnrichedUserInfo(mostCommentedUserIds)
+      .then((enrichedUserInfo) => {
+        if (!cancelled) {
+          // enrichedUserInfo is already in the correct order and format
+          setMostCommentedUserInfo(enrichedUserInfo);
         }
       })
-    ).then((userInfoArray) => {
-      if (!cancelled) {
-        // Create a map for quick lookup
-        const userMap = new Map(userInfoArray.map(info => [info.userId, info]));
-        
-        // Map back to the original order, matching each thread to its most commented user's info
-        const userInfo = mostCommentedUserIds.map(userId => 
-          userId ? (userMap.get(userId) || { displayName: 'Unknown User', avatarUrl: null }) : null
-        );
-        
-        setMostCommentedUserInfo(userInfo);
-      }
-    });
+      .catch(() => {
+        // On error, set empty array to prevent UI breakage
+        if (!cancelled) {
+          setMostCommentedUserInfo([]);
+        }
+      });
 
     return () => {
       cancelled = true;
     };
   }, [topCommentsForEnrichment]);
 
+  // Memoize tooltip formatter separately - only updates when user info loads
+  // This prevents full chart re-render, only tooltip content updates
+  const tooltipFormatter = useMemo(() => {
+    return createTooltipFormatter(baseChartData, mostCommentedUserInfo);
+  }, [baseChartData, mostCommentedUserInfo]);
+
+  // Build chart option - base data doesn't change when user info loads
+  // Only tooltip formatter updates, preventing full chart re-render
   const chartOption = useMemo(() => {
-    if (!comments || comments.length === 0) {
-      rankedCommentsRef.current = [];
-      return null;
-    }
-
-    // Rank comments by reply count and optionally limit to top N items
-    const ranked = rankParentsByReplies(comments, { status });
-    const topComments = maxItems ? ranked.slice(0, maxItems) : ranked;
-
-    if (topComments.length === 0) {
-      rankedCommentsRef.current = [];
-      return null;
-    }
-
-    // Calculate scores for color ranking (based on position in sorted array)
-    const scoredComments = calculateScore(topComments);
-
-    // Reverse order for display (most replies at top of chart)
-    const reversed = [...scoredComments].reverse();
-    rankedCommentsRef.current = reversed;
-    
-    // Reverse mostCommentedUserInfo to match the reversed chart data order
-    // Ensure we have enough info (pad with null if needed)
-    const reversedUserInfo = mostCommentedUserInfo.length > 0 
-      ? [...mostCommentedUserInfo].reverse()
-      : [];
-
-    // Prepare chart data: labels (selected text) and values (thread counts)
-    const labels = reversed.map((node) => getCommentLabel(node, 20));
-    // Each data point includes value and itemStyle for individual bar coloring
-    const data = reversed.map((node) => ({
-      value: node.threadCount,
-      itemStyle: {
-        color: RANK_COLORS[node.score]?.normal || RANK_COLORS[0].normal,
-      },
-    }));
-    const participantCounts = reversed.map((node) => node.participantCount || 0);
-    // Dynamic height based on number of items (32px per item + padding)
-    const dynamicHeight = Math.max(200, topComments.length * 32 + 60);
-
-    return {
-      height: dynamicHeight,
-      tooltip: {
-        trigger: 'axis',
-        axisPointer: { type: 'shadow' },
-        renderMode: 'html', // Required for appendToBody to work
-        appendToBody: true, // Render tooltip in document.body to avoid sidebar overflow clipping
-        className: 'echarts-tooltip-container', // Custom class for styling if needed
-        position: (point, params, dom, rect, size) => {
-          // Position tooltip to the right of the cursor, ensuring it's visible
-          return [point[0] + 10, point[1] - 10];
-        },
-        backgroundColor: '#FFFFFF',
-        borderColor: COLORS.N40,
-        borderWidth: 1,
-        textStyle: {
-          color: COLORS.N800,
-          fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-          fontSize: 12,
-        },
-        formatter: (params) => {
-          const item = params[0];
-          const commentCount = item.value; // Total thread count (parent + replies)
-          const participantCount = participantCounts[item.dataIndex];
-          const userInfo = reversedUserInfo[item.dataIndex];
-          
-          let tooltipContent = `Number of comments: <strong>${commentCount}</strong><br/>Number of participants: <strong>${participantCount}</strong>`;
-          
-          // Add most commented by user if available
-          if (userInfo && userInfo.displayName) {
-            const avatarHtml = userInfo.avatarUrl 
-              ? `<img src="${userInfo.avatarUrl}" class="conf-tooltip-avatar" alt="" />`
-              : '';
-            tooltipContent += `<br/>Most commented by: ${avatarHtml}<strong>${userInfo.displayName}</strong>`;
-          }
-          
-          return tooltipContent;
-        },
-      },
-      grid: {
-        left: 8,
-        right: 40,
-        bottom: 8,
-        top: 8,
-        containLabel: true,
-      },
-      xAxis: {
-        type: 'value',
-        minInterval: 1,
-        axisLine: { show: false },
-        axisTick: { show: false },
-        splitLine: {
-          lineStyle: { color: COLORS.N40 },
-        },
-        axisLabel: {
-          color: COLORS.N200,
-          fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-          fontSize: 11,
-        },
-      },
-      yAxis: {
-        type: 'category',
-        data: labels,
-        axisLine: { show: false },
-        axisTick: { show: false },
-        axisLabel: {
-          color: COLORS.N800,
-          fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-          fontSize: 12,
-          width: 120,
-          overflow: 'truncate',
-          ellipsis: '...',
-        },
-      },
-      series: [
-        {
-          name: 'Comments',
-          type: 'bar',
-          data: data,
-          barWidth: 16,
-          itemStyle: {
-            borderRadius: [0, 3, 3, 0],
-          },
-          label: {
-            show: true,
-            position: 'right',
-            color: COLORS.N200,
-            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-            fontSize: 11,
-            formatter: (params) => params.value,
-          },
-        },
-      ],
-    };
-  }, [comments, status, maxItems, mostCommentedUserInfo]);
+    return createCommentRepliesChartOption(baseChartData, tooltipFormatter);
+  }, [baseChartData, tooltipFormatter]);
 
   const chartHeight = chartOption?.height || 200;
 

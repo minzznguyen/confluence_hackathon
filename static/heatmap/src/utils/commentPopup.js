@@ -1,4 +1,4 @@
-import { getUserInfo } from "../api/confluence";
+import { userCache } from "./userCache";
 import { DEFAULT_AVATAR, DATE_FORMAT } from "../constants";
 import { getBaseUrl } from "./contextUtils";
 
@@ -42,25 +42,27 @@ export function findCommentsForMarker(markerRef, allComments) {
 
 /**
  * Enriches comments with user information by fetching user data for each comment author.
+ * Uses the user cache service to avoid redundant API calls and deduplicate requests.
  * 
  * @param {Array<Object>} relatedComments - Array of comment objects to enrich
  * @returns {Promise<Array<Object>>} Array of enriched comments with user property
  */
 export async function enrichCommentsWithUserInfo(relatedComments) {
-  return Promise.all(
-    relatedComments.map(async (c) => {
-      try {
-        const authorId = c.version?.authorId || c.authorId;
-        if (!authorId) {
-          return { ...c, user: null };
-        }
-        const user = await getUserInfo(authorId);
-        return { ...c, user };
-      } catch (error) {
-        return { ...c, user: null };
-      }
-    })
-  );
+  if (!relatedComments || relatedComments.length === 0) {
+    return [];
+  }
+
+  // Extract all author IDs
+  const authorIds = relatedComments.map(c => c.version?.authorId || c.authorId);
+  
+  // Use cache service to fetch user info efficiently (deduplicates and caches)
+  const users = await userCache.getMultipleUserInfo(authorIds);
+  
+  // Combine comments with user info
+  return relatedComments.map((comment, index) => ({
+    ...comment,
+    user: users[index] || null,
+  }));
 }
 
 /**
