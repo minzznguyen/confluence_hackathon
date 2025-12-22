@@ -35,6 +35,8 @@ html, body {
   min-height: 100vh;
   position: relative;
   width: 100%;
+  display: flex;
+  justify-content: center;
   transition: margin-left 0.3s ease;
 }
 
@@ -183,9 +185,22 @@ html, body {
     box-shadow: none;
   }
 
-  /* Main content shifts to make room for sidebar */
+  /* Main content is centered in the remaining space (viewport width - sidebar width) */
+  /* Set width to exclude sidebar, then use flexbox to center container */
   .conf-main {
     margin-left: 320px;
+    width: calc(100% - 320px);
+    padding-left: 0;
+    padding-right: 0;
+    /* Use flexbox to center content in the remaining space */
+    display: flex;
+    justify-content: center;
+  }
+
+  /* Container is centered within the available space */
+  .conf-container {
+    max-width: var(--conf-container-max-width);
+    margin: 0;
   }
 
   /* Toggle button position adjusts */
@@ -207,8 +222,10 @@ html, body {
     transform: translateX(-100%);
   }
 
+  /* When sidebar is hidden, center content in full viewport */
   .conf-sidebar-checkbox:checked ~ .conf-main {
     margin-left: 0;
+    width: 100%;
   }
 
   .conf-sidebar-checkbox:checked ~ .conf-sidebar-toggle {
