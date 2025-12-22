@@ -30,12 +30,12 @@ const RANK_COLORS = {
  * 
  * @param {Array} comments - Array of comment objects
  * @param {string} [status=COMMENT_STATUS.OPEN] - Filter comments by status
- * @param {number} [maxItems=10] - Maximum number of items to display
+ * @param {number} [maxItems] - Maximum number of items to display (shows all if not specified)
  */
 export default function CommentRepliesChart({
   comments,
   status = COMMENT_STATUS.OPEN,
-  maxItems = 10,
+  maxItems,
   onBarClick,
 }) {
   // Store ranked comments for click handler access
@@ -107,9 +107,9 @@ export default function CommentRepliesChart({
       return null;
     }
 
-    // Rank comments by reply count and take top N items
+    // Rank comments by reply count and optionally limit to top N items
     const ranked = rankParentsByReplies(comments, { status });
-    const topComments = ranked.slice(0, maxItems);
+    const topComments = maxItems ? ranked.slice(0, maxItems) : ranked;
 
     if (topComments.length === 0) {
       rankedCommentsRef.current = [];
@@ -301,6 +301,6 @@ CommentRepliesChart.propTypes = {
 CommentRepliesChart.defaultProps = {
   comments: [],
   status: COMMENT_STATUS.OPEN,
-  maxItems: 10,
+  maxItems: undefined,
   onBarClick: null,
 };

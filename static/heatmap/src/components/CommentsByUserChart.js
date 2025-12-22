@@ -53,21 +53,21 @@ async function enrichWithDisplayNames(userCounts) {
  * 
  * @param {Array} comments - Array of comment objects
  * @param {string} [status=COMMENT_STATUS.OPEN] - Filter comments by status
- * @param {number} [maxItems=10] - Maximum number of users to display
+ * @param {number} [maxItems] - Maximum number of users to display (shows all if not specified)
  */
 export default function CommentsByUserChart({
   comments,
   status = COMMENT_STATUS.OPEN,
-  maxItems = 10,
+  maxItems,
 }) {
   const [enrichedUsers, setEnrichedUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Group comments by user and get top N
+  // Group comments by user and optionally limit to top N
   const userCounts = useMemo(() => {
     if (!comments || comments.length === 0) return [];
     const grouped = groupCommentsByUser(comments, { status });
-    return grouped.slice(0, maxItems);
+    return maxItems ? grouped.slice(0, maxItems) : grouped;
   }, [comments, status, maxItems]);
 
   // Fetch display names for users
@@ -232,5 +232,5 @@ CommentsByUserChart.propTypes = {
 CommentsByUserChart.defaultProps = {
   comments: [],
   status: COMMENT_STATUS.OPEN,
-  maxItems: 10,
+  maxItems: undefined,
 };

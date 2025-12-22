@@ -158,9 +158,14 @@ export function useCommentPopup(html, isLoading, comments) {
         return;
       }
 
-      // Don't close if clicking in the sidebar (chart area)
-      const sidebar = event.target.closest('.conf-sidebar');
-      if (sidebar) {
+      // Don't close if clicking in the sidebar (chart area) or any sidebar-related elements
+      if (
+        event.target.closest('.conf-sidebar') ||
+        event.target.closest('.conf-sidebar-toggle') ||
+        event.target.closest('.conf-sidebar-checkbox') ||
+        event.target.classList.contains('conf-sidebar-checkbox') ||
+        event.target.id === 'conf-sidebar-toggle'
+      ) {
         return;
       }
 

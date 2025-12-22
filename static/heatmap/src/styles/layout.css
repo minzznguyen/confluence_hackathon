@@ -1,52 +1,94 @@
-/* Layout - Structural components for page wrapper, sidebar, and main content */
+/* Layout - Responsive layout system for sidebar and main content */
+
+/*
+ * RESPONSIVE STRATEGY:
+ * - Desktop (>1024px): Sidebar visible, main content beside it
+ * - Tablet (768-1024px): Sidebar as overlay, main content full width
+ * - Mobile (<768px): Sidebar as overlay, narrower width
+ *
+ * The sidebar uses position:fixed as an OVERLAY on tablet/mobile,
+ * not pushing content. This avoids cut-off issues entirely.
+ */
+
+/* ============================================
+   BASE STYLES (Mobile-first)
+   ============================================ */
+
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
 .conf-container {
   max-width: var(--conf-container-max-width);
   margin: 0 auto;
-  padding: var(--conf-space-2xl);
+  padding: var(--conf-space-lg);
   font-family: var(--conf-font-family);
   color: var(--conf-color-text);
   line-height: var(--conf-line-height-base);
   background: var(--conf-color-background);
 }
 
-/* Removed conf-page-wrapper - sidebar and main are now separate siblings */
+/* Main content - full width by default (mobile-first) */
+.conf-main {
+  min-height: 100vh;
+  position: relative;
+  width: 100%;
+  transition: margin-left 0.3s ease;
+}
 
+/* Sidebar - hidden by default, shown as overlay when toggled */
 .conf-sidebar {
-  width: var(--conf-sidebar-width);
-  padding: var(--conf-space-2xl) var(--conf-space-lg);
+  width: 280px;
+  padding: var(--conf-space-lg);
+  padding-top: var(--conf-space-2xl);
   background: var(--conf-color-background-subtle);
   border-right: 1px solid var(--conf-color-border);
   position: fixed;
   top: 0;
   left: 0;
   height: 100vh;
-  overflow: hidden;
-  z-index: 5;
+  overflow-y: auto;
+  overflow-x: hidden;
+  z-index: 100;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+  box-shadow: var(--conf-shadow-md);
 }
 
+/* Spacer at top of sidebar for visual breathing room */
 .conf-sidebar-spacer {
-  height: 160px;
+  height: 120px;
   flex-shrink: 0;
 }
 
-.conf-main {
-  margin-left: var(--conf-sidebar-width);
-  min-height: 100vh;
+/* Chart sections in sidebar */
+.conf-chart-section {
   position: relative;
+  margin-bottom: var(--conf-space-lg);
+  z-index: 1;
 }
 
-.conf-loading-container {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+/* Hidden checkbox for toggle state */
+.conf-sidebar-checkbox {
+  position: fixed;
+  opacity: 0;
+  pointer-events: none;
 }
 
+/* When checkbox is checked, show sidebar */
+.conf-sidebar-checkbox:checked ~ .conf-sidebar {
+  transform: translateX(0);
+}
+
+/* Toggle button - always visible */
 .conf-sidebar-toggle {
   position: fixed;
   top: var(--conf-space-lg);
-  left: calc(var(--conf-sidebar-width) - var(--conf-space-lg) - 12px);
-  width: 24px;
-  height: 24px;
+  left: var(--conf-space-lg);
+  width: 32px;
+  height: 32px;
   padding: 0;
   background: var(--conf-color-background);
   border: 1px solid var(--conf-color-border);
@@ -56,7 +98,7 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  z-index: 10;
+  z-index: 101;
   transition: left 0.3s ease, background 0.2s ease;
 }
 
@@ -64,64 +106,135 @@
   background: var(--conf-color-background-subtle);
 }
 
-/* Left chevron - shown when sidebar is visible (uncollapsed) */
-.conf-chevron-left {
-  display: inline-block;
-  font-size: 18px;
-  font-weight: bold;
-  color: var(--conf-color-text-secondary);
-  line-height: 1;
-  transition: opacity 0.2s ease;
-  margin: 0;
-  padding: 0;
-  transform: translateY(-1px);
-  vertical-align: middle;
-}
-
-/* Right chevron - shown when sidebar is collapsed */
+/* Chevron icons */
+.conf-chevron-left,
 .conf-chevron-right {
-  display: none;
   font-size: 18px;
   font-weight: bold;
   color: var(--conf-color-text-secondary);
   line-height: 1;
-  transition: opacity 0.2s ease;
   margin: 0;
   padding: 0;
   transform: translateY(-1px);
   vertical-align: middle;
 }
 
-/* When sidebar is collapsed, hide left chevron, show right chevron, move button to left */
-.conf-sidebar-checkbox:checked ~ .conf-sidebar-toggle {
-  left: var(--conf-space-lg);
+/* Default: show right chevron (to open), hide left */
+.conf-chevron-left {
+  display: none;
 }
 
+.conf-chevron-right {
+  display: inline-block;
+}
+
+/* When sidebar open: show left chevron (to close), hide right */
 .conf-sidebar-checkbox:checked ~ .conf-sidebar-toggle .conf-chevron-left {
-  display: none;
+  display: inline-block;
 }
 
 .conf-sidebar-checkbox:checked ~ .conf-sidebar-toggle .conf-chevron-right {
-  display: inline-block;
-}
-
-.conf-chart-section {
-  position: relative;
-  margin-top: 0;
-  z-index: 1;
-}
-
-.conf-sidebar-checkbox {
-  position: fixed;
-  opacity: 0;
-  pointer-events: none;
-}
-
-.conf-sidebar-checkbox:checked ~ .conf-sidebar {
   display: none;
 }
 
-/* Remove left margin from main content when sidebar is hidden */
-.conf-sidebar-checkbox:checked ~ .conf-main {
-  margin-left: 0;
+/* Move toggle button when sidebar is open */
+.conf-sidebar-checkbox:checked ~ .conf-sidebar-toggle {
+  left: calc(280px + var(--conf-space-lg));
+}
+
+/* Loading state */
+.conf-loading-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 200px;
+}
+
+/* ============================================
+   TABLET (768px - 1024px)
+   ============================================ */
+
+@media (min-width: 768px) {
+  .conf-container {
+    padding: var(--conf-space-xl);
+  }
+
+  .conf-sidebar {
+    width: 320px;
+    padding: var(--conf-space-xl);
+    padding-top: var(--conf-space-2xl);
+  }
+
+  .conf-sidebar-checkbox:checked ~ .conf-sidebar-toggle {
+    left: calc(320px + var(--conf-space-lg));
+  }
+}
+
+/* ============================================
+   DESKTOP (>1024px)
+   Sidebar always visible, content beside it
+   ============================================ */
+
+@media (min-width: 1024px) {
+  /* Sidebar always visible, no transform */
+  .conf-sidebar {
+    transform: translateX(0);
+    box-shadow: none;
+  }
+
+  /* Main content shifts to make room for sidebar */
+  .conf-main {
+    margin-left: 320px;
+  }
+
+  /* Toggle button position adjusts */
+  .conf-sidebar-toggle {
+    left: calc(320px - var(--conf-space-lg) - 32px);
+  }
+
+  /* Default: show left chevron (to close), hide right */
+  .conf-chevron-left {
+    display: inline-block;
+  }
+
+  .conf-chevron-right {
+    display: none;
+  }
+
+  /* When checkbox checked (sidebar hidden on desktop) */
+  .conf-sidebar-checkbox:checked ~ .conf-sidebar {
+    transform: translateX(-100%);
+  }
+
+  .conf-sidebar-checkbox:checked ~ .conf-main {
+    margin-left: 0;
+  }
+
+  .conf-sidebar-checkbox:checked ~ .conf-sidebar-toggle {
+    left: var(--conf-space-lg);
+  }
+
+  .conf-sidebar-checkbox:checked ~ .conf-sidebar-toggle .conf-chevron-left {
+    display: none;
+  }
+
+  .conf-sidebar-checkbox:checked ~ .conf-sidebar-toggle .conf-chevron-right {
+    display: inline-block;
+  }
+}
+
+/* ============================================
+   LARGE DESKTOP (>1280px)
+   More breathing room
+   ============================================ */
+
+@media (min-width: 1280px) {
+  .conf-container {
+    padding: var(--conf-space-2xl);
+  }
+
+  .conf-sidebar-spacer {
+    height: 160px;
+  }
 }
