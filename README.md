@@ -1,45 +1,87 @@
-# Forge Hello World
+## Heatmap for Confluence – Forge App
 
-This project contains a Forge app written in Javascript that displays `Hello World!` in a Confluence content byline item. 
+This repository contains a Forge app that renders an inline–comment heatmap for Confluence pages.
 
-See [developer.atlassian.com/platform/forge/](https://developer.atlassian.com/platform/forge) for documentation and tutorials explaining Forge.
+For background on Forge, see the [Forge documentation](https://developer.atlassian.com/platform/forge/).
 
-## Requirements
+## Prerequisites
 
-See [Set up Forge](https://developer.atlassian.com/platform/forge/set-up-forge/) for instructions to get set up.
+- A Confluence Cloud site where you can install Forge apps
+- Node.js and npm (matching the versions recommended in [Set up Forge](https://developer.atlassian.com/platform/forge/set-up-forge/))
+- Forge CLI installed and logged in:
 
-## Quick start
-- Install top-level dependencies:
+```bash
+forge --version
+forge login
 ```
+
+> The commands below assume you are running them from the root of this repository.
+
+## One‑time setup
+
+1. **Install root dependencies**
+
+```bash
 npm install
 ```
 
-- Install dependencies inside of the `static/hello-world` directory:
-```
+2. **Install frontend dependencies**
+
+```bash
+cd static/heatmap
 npm install
+cd ../..
 ```
 
-- Modify your app by editing the files in `static/hello-world/src/`.
+3. **Build the static frontend**
 
-- Build your app (inside of the `static/hello-world` directory):
-```
+```bash
+cd static/heatmap
 npm run build
+cd ../..
 ```
 
-- Deploy your app by running:
-```
-forge deploy
+This produces a production build under `static/heatmap/build`, which Forge serves via the `manifest.yml` resource configuration.
+
+## Deploying the app
+
+Deploy to your Forge development environment:
+
+```bash
+forge deploy --non-interactive --environment development
 ```
 
-- Install your app in an Atlassian site by running:
-```
-forge install
+> Use `development` unless you explicitly want to ship to `staging` or `production`.
+
+## Installing the app on your Confluence site
+
+Run the install command, replacing the placeholders with your details:
+
+```bash
+forge install --non-interactive \
+  --site https://your-site.atlassian.net \
+  --product confluence \
+  --environment development
 ```
 
-### Notes
-- Use the `forge deploy` command when you want to persist code changes.
-- Use the `forge install` command when you want to install the app on a new site.
-- Once the app is installed on a site, the site picks up the new app changes you deploy without needing to rerun the install command.
+- **`--site`**: your Confluence Cloud base URL  
+- **`--product`**: always `confluence` for this app  
+- **`--environment`**: must match the environment you deployed to
+
+After installation, future `forge deploy --non-interactive --environment development` commands will update the app on that site without needing to reinstall.
+
+## Local development workflow
+
+For iterative development with hot‑reload:
+
+```bash
+cd static/heatmap
+npm run build
+cd ../..
+forge tunnel
+```
+
+Then open a Confluence page where the app is installed and interact with the module. Code changes will be reflected via the tunnel without redeploying.
 
 ## Support
 
