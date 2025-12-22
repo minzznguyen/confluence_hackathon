@@ -169,12 +169,12 @@ export default function CommentsByUserChart({
           data: data,
           barWidth: 16,
           itemStyle: {
-            color: COLORS.B400, // Blue for color-blind accessibility (distinct from red thread chart)
+            color: '#000000', // Black bars
             borderRadius: [0, 3, 3, 0],
           },
           emphasis: {
             itemStyle: {
-              color: COLORS.B300,
+              color: '#333333', // Dark gray on hover
             },
           },
           label: {
