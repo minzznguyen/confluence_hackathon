@@ -15,10 +15,10 @@ const COLORS = {
 
 // Comment rank colors matching inline comment highlighting (from comments.css)
 const RANK_COLORS = {
-  0: { normal: '#ffebe6', emphasis: '#ffd6cc' }, // Lightest - lowest reply count
-  1: { normal: '#ffccc7', emphasis: '#ffb3ad' },
-  2: { normal: '#ff9a90', emphasis: '#ff8076' },
-  3: { normal: '#ff6b61', emphasis: '#ff5147' }, // Darkest - highest reply count
+  0: { normal: '#f5ec8e', emphasis: '#f9e85a' }, // Lightest - lowest reply count (yellow)
+  1: { normal: '#f7b457', emphasis: '#f4a030' }, // Light-medium (orange)
+  2: { normal: '#FE7440', emphasis: '#FE5A1A' }, // Medium-dark (darker orange)
+  3: { normal: '#FE2923', emphasis: '#E01A1A' }, // Darkest - highest reply count (red)
 };
 
 /**

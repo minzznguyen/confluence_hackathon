@@ -4,8 +4,6 @@
   max-width: 100%;
   display: block;
   margin: var(--conf-space-lg) auto;
-  border-radius: var(--conf-radius-md);
-  box-shadow: var(--conf-shadow-md);
 }
 
 .conf-body ul,
