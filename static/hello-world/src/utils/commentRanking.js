@@ -245,3 +245,67 @@ export function getCommentLabel(node, maxLength = 50) {
 export function getCommentBody(node, maxLength = 50) {
   return extractPreview(node.body, maxLength);
 }
+
+/**
+ * @typedef {Object} UserCommentCount
+ * @property {string} authorId - User's account ID
+ * @property {number} commentCount - Total number of comments by this user
+ * @property {string|null} displayName - User's display name (null until enriched)
+ */
+
+/**
+ * Groups comments by author and returns a sorted array of user comment counts.
+ * Counts all comments (both parent and replies) per user.
+ * 
+ * @param {Array<Object>} comments - Flat array of comments from API
+ * @param {Object} [options={}]
+ * @param {string} [options.status=COMMENT_STATUS.OPEN] - Filter by resolution status
+ * @returns {Array<UserCommentCount>} Array sorted by commentCount (descending)
+ * 
+ * @example
+ * groupCommentsByUser([
+ *   { id: '1', resolutionStatus: 'open', version: { authorId: 'user1' } },
+ *   { id: '2', resolutionStatus: 'open', version: { authorId: 'user2' } },
+ *   { id: '3', resolutionStatus: 'open', version: { authorId: 'user1' } },
+ * ]);
+ * // Returns: [
+ * //   { authorId: 'user1', commentCount: 2, displayName: null },
+ * //   { authorId: 'user2', commentCount: 1, displayName: null }
+ * // ]
+ */
+export function groupCommentsByUser(comments, options = {}) {
+  if (!comments?.length) return [];
+
+  const { status = COMMENT_STATUS.OPEN } = options;
+
+  // Filter comments by status (for replies, check parent's status via the tree)
+  const { roots } = buildCommentTree(comments);
+  const openRootIds = new Set(
+    roots.filter(r => r.resolutionStatus === status).map(r => r.id)
+  );
+
+  // Collect all comment IDs that belong to open threads
+  const openCommentIds = new Set();
+  const collectOpenIds = (node) => {
+    openCommentIds.add(node.id);
+    node.children?.forEach(collectOpenIds);
+  };
+  roots.filter(r => openRootIds.has(r.id)).forEach(collectOpenIds);
+
+  // Group by author, only counting comments in open threads
+  const userCounts = new Map();
+
+  for (const comment of comments) {
+    if (!openCommentIds.has(comment.id)) continue;
+
+    const authorId = comment.version?.authorId;
+    if (!authorId) continue;
+
+    const current = userCounts.get(authorId) || { authorId, commentCount: 0, displayName: null };
+    current.commentCount += 1;
+    userCounts.set(authorId, current);
+  }
+
+  // Convert to array and sort by comment count (descending)
+  return Array.from(userCounts.values()).sort((a, b) => b.commentCount - a.commentCount);
+}
