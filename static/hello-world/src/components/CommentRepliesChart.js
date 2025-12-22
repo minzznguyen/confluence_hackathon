@@ -66,7 +66,13 @@ export default function CommentRepliesChart({
       tooltip: {
         trigger: 'axis',
         axisPointer: { type: 'shadow' },
-        position: (point) => [point[0] + 10, point[1] - 10],
+        renderMode: 'html', // Required for appendToBody to work
+        appendToBody: true, // Render tooltip in document.body to avoid sidebar overflow clipping
+        className: 'echarts-tooltip-container', // Custom class for styling if needed
+        position: (point, params, dom, rect, size) => {
+          // Position tooltip to the right of the cursor, ensuring it's visible
+          return [point[0] + 10, point[1] - 10];
+        },
         backgroundColor: '#FFFFFF',
         borderColor: COLORS.N40,
         borderWidth: 1,
@@ -187,7 +193,7 @@ export default function CommentRepliesChart({
     <ReactECharts
       option={chartOption}
       style={{ height: `${chartHeight}px`, width: '100%', cursor: 'pointer' }}
-      opts={{ renderer: 'svg' }}
+      opts={{ renderer: 'canvas' }} // Canvas renderer required for appendToBody tooltip
       onEvents={onEvents}
     />
   );
