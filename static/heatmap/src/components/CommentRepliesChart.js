@@ -1,7 +1,7 @@
 import React, { useMemo, useCallback, useRef, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import ReactECharts from 'echarts-for-react';
-import { rankParentsByReplies, getCommentLabel, getCommentBody, findMostCommentedUser } from '../utils/commentRanking';
+import { rankParentsByReplies, getCommentLabel, findMostCommentedUser } from '../utils/commentRanking';
 import { calculateScore } from '../utils/colorStrip';
 import { scrollToComment } from '../utils/htmlProcessing';
 import { getUserInfo } from '../api/confluence';
@@ -129,9 +129,8 @@ export default function CommentRepliesChart({
       ? [...mostCommentedUserInfo].reverse()
       : [];
 
-    // Prepare chart data: labels (selected text), tooltips (comment body), and values (thread counts)
+    // Prepare chart data: labels (selected text) and values (thread counts)
     const labels = reversed.map((node) => getCommentLabel(node, 20));
-    const tooltipLabels = reversed.map((node) => getCommentBody(node, 50));
     // Each data point includes value and itemStyle for individual bar coloring
     const data = reversed.map((node) => ({
       value: node.threadCount,
@@ -165,13 +164,11 @@ export default function CommentRepliesChart({
         },
         formatter: (params) => {
           const item = params[0];
-          const commentBody = tooltipLabels[item.dataIndex];
           const commentCount = item.value; // Total thread count (parent + replies)
           const participantCount = participantCounts[item.dataIndex];
           const userInfo = reversedUserInfo[item.dataIndex];
           
-          // Start with comment body text in italic at the top
-          let tooltipContent = `<em>'${commentBody}'</em><br/>Number of comments: <strong>${commentCount}</strong><br/>Number of participants: <strong>${participantCount}</strong>`;
+          let tooltipContent = `Number of comments: <strong>${commentCount}</strong><br/>Number of participants: <strong>${participantCount}</strong>`;
           
           // Add most commented by user if available
           if (userInfo && userInfo.displayName) {
