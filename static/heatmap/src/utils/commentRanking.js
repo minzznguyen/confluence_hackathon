@@ -136,6 +136,59 @@ function collectParticipants(node) {
 }
 
 /**
+ * Recursively counts comments by each author in a thread and returns the authorId with the most comments.
+ * 
+ * @param {CommentNode} node - Comment node with children array and authorId
+ * @returns {string|null} The authorId with the most comments in the thread, or null if no authors found
+ * 
+ * @example
+ * findMostCommentedUser({ 
+ *   id: '1', 
+ *   authorId: 'user1',
+ *   children: [
+ *     { id: '2', authorId: 'user2', children: [] },
+ *     { id: '3', authorId: 'user1', children: [] },
+ *     { id: '4', authorId: 'user1', children: [] }
+ *   ]
+ * }); // Returns 'user1' (3 comments vs 1 comment)
+ */
+export function findMostCommentedUser(node) {
+  if (!node) return null;
+  
+  // Map to count comments per author
+  const authorCounts = new Map();
+  
+  // Recursive function to count comments by author
+  const countByAuthor = (n) => {
+    if (n.authorId) {
+      const current = authorCounts.get(n.authorId) || 0;
+      authorCounts.set(n.authorId, current + 1);
+    }
+    
+    // Recursively count children
+    if (n.children?.length) {
+      n.children.forEach(child => countByAuthor(child));
+    }
+  };
+  
+  // Count all comments in the thread
+  countByAuthor(node);
+  
+  // Find the author with the most comments
+  let maxCount = 0;
+  let mostCommentedAuthorId = null;
+  
+  for (const [authorId, count] of authorCounts.entries()) {
+    if (count > maxCount) {
+      maxCount = count;
+      mostCommentedAuthorId = authorId;
+    }
+  }
+  
+  return mostCommentedAuthorId;
+}
+
+/**
  * Returns parent comments ranked by thread size (descending).
  * Thread size = 1 (parent) + number of replies.
  * Filters by status before ranking.
