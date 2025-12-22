@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import ReactECharts from 'echarts-for-react';
 import Spinner from '@atlaskit/spinner';
 import { groupCommentsByUser } from '../utils/commentRanking';
-import { getUserInfo } from '../api/confluence';
+import { userCache } from '../utils/userCache';
 import { COMMENT_STATUS } from '../constants';
 
 // Atlassian Design System color palette
@@ -18,29 +18,23 @@ const COLORS = {
 
 /**
  * Fetches display names for an array of user comment counts.
- * Uses a cache to avoid redundant API calls.
+ * Uses the user cache service to avoid redundant API calls and deduplicate requests.
  * 
  * @param {Array<{authorId: string, commentCount: number}>} userCounts - Array of user counts
  * @returns {Promise<Array<{authorId: string, commentCount: number, displayName: string}>>} Enriched array
  */
 async function enrichWithDisplayNames(userCounts) {
-  const enriched = await Promise.all(
-    userCounts.map(async (item) => {
-      try {
-        const user = await getUserInfo(item.authorId);
-        return {
-          ...item,
-          displayName: user?.displayName || 'Unknown User',
-        };
-      } catch {
-        return {
-          ...item,
-          displayName: 'Unknown User',
-        };
-      }
-    })
-  );
-  return enriched;
+  // Extract author IDs
+  const authorIds = userCounts.map(item => item.authorId);
+  
+  // Use cache service to fetch user info efficiently (deduplicates and caches)
+  const users = await userCache.getMultipleUserInfo(authorIds);
+  
+  // Combine user info with comment counts
+  return userCounts.map((item, index) => ({
+    ...item,
+    displayName: users[index]?.displayName || 'Unknown User',
+  }));
 }
 
 /**

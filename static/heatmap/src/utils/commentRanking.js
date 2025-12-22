@@ -1,4 +1,5 @@
 import { COMMENT_STATUS } from '../constants';
+import { memoize, createCommentCacheKey } from './memoize';
 
 /**
  * @typedef {Object} CommentNode
@@ -15,30 +16,10 @@ import { COMMENT_STATUS } from '../constants';
  */
 
 /**
- * Builds a tree structure from a flat array of comments.
- * 
- * By default, only includes essential fields: id, body, resolutionStatus, inlineMarkerRef, 
- * inlineOriginalSelection, authorId, and children. Use transformNode to include additional fields.
- * 
- * @param {Array<Object>} comments - Flat array from API. Each comment has id, optional parentCommentId, body, resolutionStatus, version.authorId, and properties.{inlineMarkerRef, inlineOriginalSelection}
- * @param {Function} [transformNode] - Optional function to transform each node. If provided, receives (comment, baseNode) and returns the transformed node. If not provided, returns baseNode with only essential fields.
- * @returns {CommentTree} Tree with roots array of top-level nodes
- * 
- * @example
- * buildCommentTree([
- *   { id: '1', resolutionStatus: 'open', version: { authorId: 'user1' } },
- *   { id: '2', parentCommentId: '1', resolutionStatus: 'open', version: { authorId: 'user2' } }
- * ]);
- * // Returns: { roots: [{ id: '1', authorId: 'user1', children: [{ id: '2', authorId: 'user2', children: [] }] }] }
- * 
- * @example
- * buildCommentTree(comments, (comment, baseNode) => ({
- *   ...comment,
- *   ...baseNode,
- *   children: []
- * }));
+ * Internal implementation of buildCommentTree (not memoized).
+ * This is memoized by the exported function below when transformNode is null.
  */
-export function buildCommentTree(comments, transformNode = null) {
+function buildCommentTreeImpl(comments, transformNode = null) {
   if (!comments || comments.length === 0) {
     return { roots: [] };
   }
@@ -81,6 +62,49 @@ export function buildCommentTree(comments, transformNode = null) {
   }
 
   return { roots };
+}
+
+/**
+ * Builds a tree structure from a flat array of comments.
+ * 
+ * By default, only includes essential fields: id, body, resolutionStatus, inlineMarkerRef, 
+ * inlineOriginalSelection, authorId, and children. Use transformNode to include additional fields.
+ * 
+ * Note: This function is memoized when transformNode is null (most common case).
+ * When transformNode is provided, memoization is disabled as the transform function
+ * may have side effects or produce different results each time.
+ * 
+ * @param {Array<Object>} comments - Flat array from API. Each comment has id, optional parentCommentId, body, resolutionStatus, version.authorId, and properties.{inlineMarkerRef, inlineOriginalSelection}
+ * @param {Function} [transformNode] - Optional function to transform each node. If provided, receives (comment, baseNode) and returns the transformed node. If not provided, returns baseNode with only essential fields.
+ * @returns {CommentTree} Tree with roots array of top-level nodes
+ * 
+ * @example
+ * buildCommentTree([
+ *   { id: '1', resolutionStatus: 'open', version: { authorId: 'user1' } },
+ *   { id: '2', parentCommentId: '1', resolutionStatus: 'open', version: { authorId: 'user2' } }
+ * ]);
+ * // Returns: { roots: [{ id: '1', authorId: 'user1', children: [{ id: '2', authorId: 'user2', children: [] }] }] }
+ * 
+ * @example
+ * buildCommentTree(comments, (comment, baseNode) => ({
+ *   ...comment,
+ *   ...baseNode,
+ *   children: []
+ * }));
+ */
+export function buildCommentTree(comments, transformNode = null) {
+  // Only memoize when transformNode is null (most common case)
+  // When transformNode is provided, we can't safely memoize as the transform may vary
+  if (transformNode === null) {
+    const memoized = memoize(
+      (comments) => buildCommentTreeImpl(comments, null),
+      (comments) => createCommentCacheKey(comments, {})
+    );
+    return memoized(comments);
+  }
+  
+  // No memoization when transformNode is provided
+  return buildCommentTreeImpl(comments, transformNode);
 }
 
 /**
@@ -189,26 +213,10 @@ export function findMostCommentedUser(node) {
 }
 
 /**
- * Returns parent comments ranked by thread size (descending).
- * Thread size = 1 (parent) + number of replies.
- * Filters by status before ranking.
- * Also calculates the number of unique participants (authors) in each thread.
- * 
- * @param {Array<Object>} comments - Flat array from API
- * @param {Object} [options={}]
- * @param {string} [options.status=COMMENT_STATUS.OPEN] - Filter by status
- * @returns {Array<CommentNode & { threadCount: number, participantCount: number }>} Root comments sorted by threadCount (descending)
- * 
- * @example
- * rankParentsByReplies([
- *   { id: '1', resolutionStatus: 'open', version: { authorId: 'user1' } },
- *   { id: '2', parentCommentId: '1', resolutionStatus: 'open', version: { authorId: 'user2' } },
- *   { id: '3', parentCommentId: '1', resolutionStatus: 'open', version: { authorId: 'user1' } },
- *   { id: '4', resolutionStatus: 'open', version: { authorId: 'user3' } }
- * ]);
- * // Returns: [{ id: '1', threadCount: 3, participantCount: 2, ... }, { id: '4', threadCount: 1, participantCount: 1, ... }]
+ * Internal implementation of rankParentsByReplies (not memoized).
+ * This is memoized by the exported function below.
  */
-export function rankParentsByReplies(comments, options = {}) {
+function rankParentsByRepliesImpl(comments, options = {}) {
   if (!comments?.length) return [];
 
   const { status = COMMENT_STATUS.OPEN } = options;
@@ -228,6 +236,34 @@ export function rankParentsByReplies(comments, options = {}) {
     })
     .sort((a, b) => b.threadCount - a.threadCount);
 }
+
+/**
+ * Returns parent comments ranked by thread size (descending).
+ * Thread size = 1 (parent) + number of replies.
+ * Filters by status before ranking.
+ * Also calculates the number of unique participants (authors) in each thread.
+ * 
+ * This function is memoized to prevent redundant computations when called with
+ * the same comments array and options.
+ * 
+ * @param {Array<Object>} comments - Flat array from API
+ * @param {Object} [options={}]
+ * @param {string} [options.status=COMMENT_STATUS.OPEN] - Filter by status
+ * @returns {Array<CommentNode & { threadCount: number, participantCount: number }>} Root comments sorted by threadCount (descending)
+ * 
+ * @example
+ * rankParentsByReplies([
+ *   { id: '1', resolutionStatus: 'open', version: { authorId: 'user1' } },
+ *   { id: '2', parentCommentId: '1', resolutionStatus: 'open', version: { authorId: 'user2' } },
+ *   { id: '3', parentCommentId: '1', resolutionStatus: 'open', version: { authorId: 'user1' } },
+ *   { id: '4', resolutionStatus: 'open', version: { authorId: 'user3' } }
+ * ]);
+ * // Returns: [{ id: '1', threadCount: 3, participantCount: 2, ... }, { id: '4', threadCount: 1, participantCount: 1, ... }]
+ */
+export const rankParentsByReplies = memoize(
+  rankParentsByRepliesImpl,
+  (comments, options) => createCommentCacheKey(comments, options)
+);
 
 /**
  * Extracts preview text from comment body in atlas_doc_format.
@@ -307,26 +343,10 @@ export function getCommentBody(node, maxLength = 50) {
  */
 
 /**
- * Groups comments by author and returns a sorted array of user comment counts.
- * Counts all comments (both parent and replies) per user.
- * 
- * @param {Array<Object>} comments - Flat array of comments from API
- * @param {Object} [options={}]
- * @param {string} [options.status=COMMENT_STATUS.OPEN] - Filter by resolution status
- * @returns {Array<UserCommentCount>} Array sorted by commentCount (descending)
- * 
- * @example
- * groupCommentsByUser([
- *   { id: '1', resolutionStatus: 'open', version: { authorId: 'user1' } },
- *   { id: '2', resolutionStatus: 'open', version: { authorId: 'user2' } },
- *   { id: '3', resolutionStatus: 'open', version: { authorId: 'user1' } },
- * ]);
- * // Returns: [
- * //   { authorId: 'user1', commentCount: 2, displayName: null },
- * //   { authorId: 'user2', commentCount: 1, displayName: null }
- * // ]
+ * Internal implementation of groupCommentsByUser (not memoized).
+ * This is memoized by the exported function below.
  */
-export function groupCommentsByUser(comments, options = {}) {
+function groupCommentsByUserImpl(comments, options = {}) {
   if (!comments?.length) return [];
 
   const { status = COMMENT_STATUS.OPEN } = options;
@@ -362,3 +382,31 @@ export function groupCommentsByUser(comments, options = {}) {
   // Convert to array and sort by comment count (descending)
   return Array.from(userCounts.values()).sort((a, b) => b.commentCount - a.commentCount);
 }
+
+/**
+ * Groups comments by author and returns a sorted array of user comment counts.
+ * Counts all comments (both parent and replies) per user.
+ * 
+ * This function is memoized to prevent redundant computations when called with
+ * the same comments array and options.
+ * 
+ * @param {Array<Object>} comments - Flat array of comments from API
+ * @param {Object} [options={}]
+ * @param {string} [options.status=COMMENT_STATUS.OPEN] - Filter by resolution status
+ * @returns {Array<UserCommentCount>} Array sorted by commentCount (descending)
+ * 
+ * @example
+ * groupCommentsByUser([
+ *   { id: '1', resolutionStatus: 'open', version: { authorId: 'user1' } },
+ *   { id: '2', resolutionStatus: 'open', version: { authorId: 'user2' } },
+ *   { id: '3', resolutionStatus: 'open', version: { authorId: 'user1' } },
+ * ]);
+ * // Returns: [
+ * //   { authorId: 'user1', commentCount: 2, displayName: null },
+ * //   { authorId: 'user2', commentCount: 1, displayName: null }
+ * // ]
+ */
+export const groupCommentsByUser = memoize(
+  groupCommentsByUserImpl,
+  (comments, options) => createCommentCacheKey(comments, options)
+);

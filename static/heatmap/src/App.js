@@ -1,12 +1,16 @@
+import { lazy, Suspense } from "react";
 import { usePageData } from "./hooks/usePageData";
 import { useCommentPopup } from "./hooks/useCommentPopup";
-import CommentRepliesChart from "./components/CommentRepliesChart";
-import CommentsByUserChart from "./components/CommentsByUserChart";
 import CommentPopup from "./components/CommentPopup";
 import Heading from "@atlaskit/heading";
 import InlineMessage from "@atlaskit/inline-message";
 import Spinner from "@atlaskit/spinner";
 import { COMMENT_STATUS, UI_LABELS } from "./constants";
+
+// Lazy load chart components to reduce initial bundle size
+// ECharts library will only be loaded when charts are rendered
+const CommentRepliesChart = lazy(() => import("./components/CommentRepliesChart"));
+const CommentsByUserChart = lazy(() => import("./components/CommentsByUserChart"));
 
 export default function App() {
   const { page, html, comments, error, isLoading } = usePageData();
@@ -48,20 +52,32 @@ export default function App() {
         <div className="conf-sidebar-spacer"></div>
         <div className="conf-chart-section">
           <Heading as="h4">Number of Comments by Thread</Heading>
-          <CommentRepliesChart
-            comments={comments}
-            status={COMMENT_STATUS.OPEN}
-            maxItems={20}
-            onBarClick={openPopupForMarker}
-          />
+          <Suspense fallback={
+            <div className="conf-chart-empty">
+              <Spinner size="small" />
+            </div>
+          }>
+            <CommentRepliesChart
+              comments={comments}
+              status={COMMENT_STATUS.OPEN}
+              maxItems={20}
+              onBarClick={openPopupForMarker}
+            />
+          </Suspense>
         </div>
         <div className="conf-chart-section">
           <Heading as="h4">Number of Comments by Author</Heading>
-          <CommentsByUserChart
-            comments={comments}
-            status={COMMENT_STATUS.OPEN}
-            maxItems={10}
-          />
+          <Suspense fallback={
+            <div className="conf-chart-empty">
+              <Spinner size="small" />
+            </div>
+          }>
+            <CommentsByUserChart
+              comments={comments}
+              status={COMMENT_STATUS.OPEN}
+              maxItems={10}
+            />
+          </Suspense>
         </div>
       </aside>
 
