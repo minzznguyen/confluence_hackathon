@@ -4,8 +4,8 @@ modules:
       resource: main
       resolver:
         function: resolver
-      routePrefix: hello-world
-  
+      routePrefix: heatmap
+
   confluence:contentBylineItem:
     - key: heatmap-content-byline
       title: Heatmap
@@ -21,7 +21,7 @@ modules:
       handler: index.handler
 resources:
   - key: main
-    path: static/hello-world/build
+    path: static/heatmap/build
 app:
   runtime:
     name: nodejs22.x
