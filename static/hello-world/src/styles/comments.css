@@ -149,40 +149,38 @@
   margin-top: 12px;
 }
 
-
-
 /* Dynamic Comment Ranking - 4 color tiers for text backgrounds */
 .conf-inline-comment.comment-rank-0 {
-  background-color: #ffebe6; /* Lightest - lowest reply count */
+  background-color: #fcf47e; /* Lightest - lowest reply count */
 }
 
 .conf-inline-comment.comment-rank-1 {
-  background-color: #ffccc7; /* Light-medium */
+  background-color: #f7b457; /* Light-medium */
 }
 
 .conf-inline-comment.comment-rank-2 {
-  background-color: #ff9a90; /* Medium-dark */
+  background-color: #FE7440; /* Medium-dark */
 }
 
 .conf-inline-comment.comment-rank-3 {
-  background-color: #ff6b61; /* Darkest - highest reply count */
+  background-color: #FE2923; /* Darkest - highest reply count */
 }
 
 /* Dynamic block borders matching comment ranks */
 .conf-has-comment-rank-0 {
-  border-left-color: #ffccc7; /* Slightly darker than rank-0 background */
+  border-left-color: #fcf47e; /* Slightly darker than rank-0 background */
 }
 
 .conf-has-comment-rank-1 {
-  border-left-color: #ff9a90; /* Slightly darker than rank-1 background */
+  border-left-color: #f7b457; /* Slightly darker than rank-1 background */
 }
 
 .conf-has-comment-rank-2 {
-  border-left-color: #ff6b61; /* Slightly darker than rank-2 background */
+  border-left-color: #FE7440; /* Slightly darker than rank-2 background */
 }
 
 .conf-has-comment-rank-3 {
-  border-left-color: #de350b; /* Darkest red for highest rank */
+  border-left-color: #FE2923; /* Darkest red for highest rank */
 }
 
 .conf-inline-comment:hover,
