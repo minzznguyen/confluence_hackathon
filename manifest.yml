@@ -14,7 +14,7 @@ modules:
       resource: main
       resolver:
         function: resolver
-      viewportContainer: modal
+      viewportContainer: popup
   
   function:
     - key: resolver

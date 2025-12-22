@@ -5,6 +5,7 @@ import { rankParentsByReplies, getCommentLabel, getCommentBody, findMostCommente
 import { calculateScore } from '../utils/colorStrip';
 import { scrollToComment } from '../utils/htmlProcessing';
 import { getUserInfo } from '../api/confluence';
+import { getAvatarUrl } from '../utils/commentPopup';
 import { COMMENT_STATUS } from '../constants';
 
 // Atlassian Design System color palette
@@ -39,8 +40,8 @@ export default function CommentRepliesChart({
 }) {
   // Store ranked comments for click handler access
   const rankedCommentsRef = useRef([]);
-  // Store display names for most commented users per thread
-  const [mostCommentedUserNames, setMostCommentedUserNames] = useState([]);
+  // Store display names and avatar URLs for most commented users per thread
+  const [mostCommentedUserInfo, setMostCommentedUserInfo] = useState([]);
 
   // Calculate most commented user for each thread and fetch display names
   const topCommentsForEnrichment = useMemo(() => {
@@ -49,10 +50,10 @@ export default function CommentRepliesChart({
     return ranked.slice(0, maxItems);
   }, [comments, status, maxItems]);
 
-  // Fetch display names for most commented users
+  // Fetch display names and avatar URLs for most commented users
   useEffect(() => {
     if (topCommentsForEnrichment.length === 0) {
-      setMostCommentedUserNames([]);
+      setMostCommentedUserInfo([]);
       return;
     }
 
@@ -61,29 +62,37 @@ export default function CommentRepliesChart({
     // Calculate most commented user for each thread
     const mostCommentedUserIds = topCommentsForEnrichment.map(node => findMostCommentedUser(node));
 
-    // Fetch display names for unique user IDs
+    // Fetch user info (display name and avatar) for unique user IDs
     const uniqueUserIds = [...new Set(mostCommentedUserIds.filter(id => id !== null))];
     
     Promise.all(
       uniqueUserIds.map(async (userId) => {
         try {
           const user = await getUserInfo(userId);
-          return { userId, displayName: user?.displayName || 'Unknown User' };
+          return { 
+            userId, 
+            displayName: user?.displayName || 'Unknown User',
+            avatarUrl: getAvatarUrl(user)
+          };
         } catch {
-          return { userId, displayName: 'Unknown User' };
+          return { 
+            userId, 
+            displayName: 'Unknown User',
+            avatarUrl: null
+          };
         }
       })
     ).then((userInfoArray) => {
       if (!cancelled) {
         // Create a map for quick lookup
-        const userMap = new Map(userInfoArray.map(info => [info.userId, info.displayName]));
+        const userMap = new Map(userInfoArray.map(info => [info.userId, info]));
         
-        // Map back to the original order, matching each thread to its most commented user's display name
-        const displayNames = mostCommentedUserIds.map(userId => 
-          userId ? (userMap.get(userId) || 'Unknown User') : null
+        // Map back to the original order, matching each thread to its most commented user's info
+        const userInfo = mostCommentedUserIds.map(userId => 
+          userId ? (userMap.get(userId) || { displayName: 'Unknown User', avatarUrl: null }) : null
         );
         
-        setMostCommentedUserNames(displayNames);
+        setMostCommentedUserInfo(userInfo);
       }
     });
 
@@ -114,15 +123,15 @@ export default function CommentRepliesChart({
     const reversed = [...scoredComments].reverse();
     rankedCommentsRef.current = reversed;
     
-    // Reverse mostCommentedUserNames to match the reversed chart data order
-    // Ensure we have enough names (pad with null if needed)
-    const reversedUserNames = mostCommentedUserNames.length > 0 
-      ? [...mostCommentedUserNames].reverse()
+    // Reverse mostCommentedUserInfo to match the reversed chart data order
+    // Ensure we have enough info (pad with null if needed)
+    const reversedUserInfo = mostCommentedUserInfo.length > 0 
+      ? [...mostCommentedUserInfo].reverse()
       : [];
 
     // Prepare chart data: labels (selected text), tooltips (comment body), and values (thread counts)
     const labels = reversed.map((node) => getCommentLabel(node, 20));
-    const tooltipLabels = reversed.map((node) => getCommentBody(node, 40));
+    const tooltipLabels = reversed.map((node) => getCommentBody(node, 50));
     // Each data point includes value and itemStyle for individual bar coloring
     const data = reversed.map((node) => ({
       value: node.threadCount,
@@ -130,7 +139,6 @@ export default function CommentRepliesChart({
         color: RANK_COLORS[node.score]?.normal || RANK_COLORS[0].normal,
       },
     }));
-    const replyCounts = reversed.map((node) => node.threadCount - 1);
     const participantCounts = reversed.map((node) => node.participantCount || 0);
     // Dynamic height based on number of items (32px per item + padding)
     const dynamicHeight = Math.max(200, topComments.length * 32 + 60);
@@ -157,16 +165,20 @@ export default function CommentRepliesChart({
         },
         formatter: (params) => {
           const item = params[0];
-          const tooltip = tooltipLabels[item.dataIndex];
-          const replyCount = replyCounts[item.dataIndex];
+          const commentBody = tooltipLabels[item.dataIndex];
+          const commentCount = item.value; // Total thread count (parent + replies)
           const participantCount = participantCounts[item.dataIndex];
-          const mostCommentedBy = reversedUserNames[item.dataIndex];
+          const userInfo = reversedUserInfo[item.dataIndex];
           
-          let tooltipContent = `<span style="color:${COLORS.N200}">${tooltip}</span><br/><strong>${replyCount}</strong> ${replyCount === 1 ? 'reply' : 'replies'}<br/><strong>${participantCount}</strong> ${participantCount === 1 ? 'participant' : 'participants'}`;
+          // Start with comment body text in italic at the top
+          let tooltipContent = `<em>'${commentBody}'</em><br/>Number of comments: <strong>${commentCount}</strong><br/>Number of participants: <strong>${participantCount}</strong>`;
           
           // Add most commented by user if available
-          if (mostCommentedBy) {
-            tooltipContent += `<br/>Most commented by: <strong>${mostCommentedBy}</strong>`;
+          if (userInfo && userInfo.displayName) {
+            const avatarHtml = userInfo.avatarUrl 
+              ? `<img src="${userInfo.avatarUrl}" class="conf-tooltip-avatar" alt="" />`
+              : '';
+            tooltipContent += `<br/>Most commented by: ${avatarHtml}<strong>${userInfo.displayName}</strong>`;
           }
           
           return tooltipContent;
@@ -227,7 +239,7 @@ export default function CommentRepliesChart({
         },
       ],
     };
-  }, [comments, status, maxItems, mostCommentedUserNames]);
+  }, [comments, status, maxItems, mostCommentedUserInfo]);
 
   const chartHeight = chartOption?.height || 200;
 
