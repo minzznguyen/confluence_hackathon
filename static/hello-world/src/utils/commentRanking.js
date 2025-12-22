@@ -1,4 +1,4 @@
-import { COMMENT_STATUS } from "../constants";
+import { COMMENT_STATUS } from '../constants';
 
 /**
  * @typedef {Object} CommentNode
@@ -9,28 +9,28 @@ import { COMMENT_STATUS } from "../constants";
  * @property {string|null} inlineOriginalSelection
  * @property {string|null} authorId
  * @property {CommentNode[]} children
- *
+ * 
  * @typedef {Object} CommentTree
  * @property {CommentNode[]} roots
  */
 
 /**
  * Builds a tree structure from a flat array of comments.
- *
- * By default, only includes essential fields: id, body, resolutionStatus, inlineMarkerRef,
+ * 
+ * By default, only includes essential fields: id, body, resolutionStatus, inlineMarkerRef, 
  * inlineOriginalSelection, authorId, and children. Use transformNode to include additional fields.
- *
+ * 
  * @param {Array<Object>} comments - Flat array from API. Each comment has id, optional parentCommentId, body, resolutionStatus, version.authorId, and properties.{inlineMarkerRef, inlineOriginalSelection}
  * @param {Function} [transformNode] - Optional function to transform each node. If provided, receives (comment, baseNode) and returns the transformed node. If not provided, returns baseNode with only essential fields.
  * @returns {CommentTree} Tree with roots array of top-level nodes
- *
+ * 
  * @example
  * buildCommentTree([
  *   { id: '1', resolutionStatus: 'open', version: { authorId: 'user1' } },
  *   { id: '2', parentCommentId: '1', resolutionStatus: 'open', version: { authorId: 'user2' } }
  * ]);
  * // Returns: { roots: [{ id: '1', authorId: 'user1', children: [{ id: '2', authorId: 'user2', children: [] }] }] }
- *
+ * 
  * @example
  * buildCommentTree(comments, (comment, baseNode) => ({
  *   ...comment,
@@ -48,22 +48,21 @@ export function buildCommentTree(comments, transformNode = null) {
 
   for (const comment of comments) {
     let node;
-
+    
     // Create base node with only essential fields
     const baseNode = {
       id: comment.id,
       body: comment.body,
       resolutionStatus: comment.resolutionStatus || null,
       inlineMarkerRef: comment.properties?.inlineMarkerRef || null,
-      inlineOriginalSelection:
-        comment.properties?.inlineOriginalSelection || null,
+      inlineOriginalSelection: comment.properties?.inlineOriginalSelection || null,
       authorId: comment.version?.authorId || null,
       children: [],
     };
 
     // Apply transform if provided, otherwise use base node as-is
     node = transformNode ? transformNode(comment, baseNode) : baseNode;
-
+    
     nodeMap.set(comment.id, node);
   }
 
@@ -86,10 +85,10 @@ export function buildCommentTree(comments, transformNode = null) {
 
 /**
  * Recursively counts all nested replies for a comment node (including grandchildren).
- *
+ * 
  * @param {CommentNode} node - Comment node with children array
  * @returns {number} Total count of all nested replies
- *
+ * 
  * @example
  * countReplies({ id: '1', children: [
  *   { id: '2', children: [{ id: '4', children: [] }] },
@@ -103,13 +102,13 @@ function countReplies(node) {
 
 /**
  * Recursively collects all unique author IDs from a comment thread (including the parent and all replies).
- *
+ * 
  * @param {CommentNode} node - Comment node with children array and authorId
  * @returns {Set<string>} Set of unique author IDs in the thread
- *
+ * 
  * @example
- * countParticipants({
- *   id: '1',
+ * countParticipants({ 
+ *   id: '1', 
  *   authorId: 'user1',
  *   children: [
  *     { id: '2', authorId: 'user2', children: [] },
@@ -119,20 +118,20 @@ function countReplies(node) {
  */
 function collectParticipants(node) {
   const participants = new Set();
-
+  
   // Add the current node's author if it exists
   if (node.authorId) {
     participants.add(node.authorId);
   }
-
+  
   // Recursively collect participants from all children
   if (node.children?.length) {
-    node.children.forEach((child) => {
+    node.children.forEach(child => {
       const childParticipants = collectParticipants(child);
-      childParticipants.forEach((id) => participants.add(id));
+      childParticipants.forEach(id => participants.add(id));
     });
   }
-
+  
   return participants;
 }
 
@@ -141,12 +140,12 @@ function collectParticipants(node) {
  * Thread size = 1 (parent) + number of replies.
  * Filters by status before ranking.
  * Also calculates the number of unique participants (authors) in each thread.
- *
+ * 
  * @param {Array<Object>} comments - Flat array from API
  * @param {Object} [options={}]
  * @param {string} [options.status=COMMENT_STATUS.OPEN] - Filter by status
  * @returns {Array<CommentNode & { threadCount: number, participantCount: number }>} Root comments sorted by threadCount (descending)
- *
+ * 
  * @example
  * rankParentsByReplies([
  *   { id: '1', resolutionStatus: 'open', version: { authorId: 'user1' } },
@@ -162,16 +161,16 @@ export function rankParentsByReplies(comments, options = {}) {
   const { status = COMMENT_STATUS.OPEN } = options;
   const { roots } = buildCommentTree(comments);
 
-  const filtered = roots.filter((r) => r.resolutionStatus === status);
+  const filtered = roots.filter(r => r.resolutionStatus === status);
 
   return filtered
-    .map((root) => {
+    .map(root => {
       const threadCount = 1 + countReplies(root);
       const participants = collectParticipants(root);
-      return {
-        ...root,
+      return { 
+        ...root, 
         threadCount,
-        participantCount: participants.size,
+        participantCount: participants.size
       };
     })
     .sort((a, b) => b.threadCount - a.threadCount);
@@ -180,69 +179,66 @@ export function rankParentsByReplies(comments, options = {}) {
 /**
  * Extracts preview text from comment body in atlas_doc_format.
  * Recursively traverses document structure to extract all text content.
- *
+ * 
  * @param {Object} body - Body with atlas_doc_format.value (JSON string or object)
  * @param {number} [maxLength=30] - Max length before truncation with ellipsis
  * @returns {string} Extracted text or '(No content)' if empty/invalid
- *
+ * 
  * @example
  * extractPreview({ atlas_doc_format: { value: JSON.stringify({
  *   content: [{ content: [{ type: 'text', text: 'Great comment!' }] }]
  * }) } }, 10); // Returns 'Great com…'
  */
 function extractPreview(body, maxLength = 30) {
-  if (!body) return "(No content)";
+  if (!body) return '(No content)';
 
   try {
     const atlasDoc = body.atlas_doc_format?.value;
-    if (!atlasDoc) return "(No content)";
+    if (!atlasDoc) return '(No content)';
 
-    const parsed =
-      typeof atlasDoc === "string" ? JSON.parse(atlasDoc) : atlasDoc;
-    let text = "";
-
+    const parsed = typeof atlasDoc === 'string' ? JSON.parse(atlasDoc) : atlasDoc;
+    let text = '';
+    
     const extract = (node) => {
-      if (node.type === "text" && node.text) text += node.text;
+      if (node.type === 'text' && node.text) text += node.text;
       if (node.content) node.content.forEach(extract);
     };
 
     if (parsed.content) parsed.content.forEach(extract);
 
     text = text.trim();
-    if (!text) return "(No content)";
-    return text.length <= maxLength ? text : text.slice(0, maxLength - 1) + "…";
+    if (!text) return '(No content)';
+    return text.length <= maxLength ? text : text.slice(0, maxLength - 1) + '…';
   } catch {
-    return "(No content)";
+    return '(No content)';
   }
 }
 
 /**
  * Gets display label using the highlighted/selected text (what user selected when creating comment).
- *
+ * 
  * @param {CommentNode} node - Node with inlineOriginalSelection property
  * @param {number} [maxLength=50] - Max length before truncation with ellipsis
  * @returns {string} Selected text or '(No selection)' if missing/invalid
- *
+ * 
  * @example
  * getCommentLabel({ inlineOriginalSelection: 'Selected text here' }, 10); // Returns 'Selected t…'
  */
 export function getCommentLabel(node, maxLength = 50) {
   const text = node.inlineOriginalSelection;
-  if (!text || typeof text !== "string") return "(No selection)";
+  if (!text || typeof text !== 'string') return '(No selection)';
   const trimmed = text.trim();
-  return trimmed.length <= maxLength
-    ? trimmed
-    : trimmed.slice(0, maxLength - 1) + "…";
+  return trimmed.length <= maxLength ? trimmed : trimmed.slice(0, maxLength - 1) + '…';
 }
 
 /**
  * Gets the comment body text (what the reviewer wrote).
  * Extracts preview from body using extractPreview.
- *
+ * 
  * @param {CommentNode} node - Node with body property
  * @param {number} [maxLength=50] - Max length before truncation with ellipsis
  * @returns {string} Comment body preview or '(No content)' if empty/invalid
- *
+ * 
  * @example
  * getCommentBody({ body: { atlas_doc_format: { value: '...' } } }, 10); // Returns preview text
  */
