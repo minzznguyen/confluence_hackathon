@@ -1,9 +1,10 @@
-import React, { useMemo, useCallback, useRef } from 'react';
+import React, { useMemo, useCallback, useRef, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import ReactECharts from 'echarts-for-react';
-import { rankParentsByReplies, getCommentLabel, getCommentBody } from '../utils/commentRanking';
+import { rankParentsByReplies, getCommentLabel, getCommentBody, findMostCommentedUser } from '../utils/commentRanking';
 import { calculateScore } from '../utils/colorStrip';
 import { scrollToComment } from '../utils/htmlProcessing';
+import { getUserInfo } from '../api/confluence';
 import { COMMENT_STATUS } from '../constants';
 
 // Atlassian Design System color palette
@@ -38,6 +39,58 @@ export default function CommentRepliesChart({
 }) {
   // Store ranked comments for click handler access
   const rankedCommentsRef = useRef([]);
+  // Store display names for most commented users per thread
+  const [mostCommentedUserNames, setMostCommentedUserNames] = useState([]);
+
+  // Calculate most commented user for each thread and fetch display names
+  const topCommentsForEnrichment = useMemo(() => {
+    if (!comments || comments.length === 0) return [];
+    const ranked = rankParentsByReplies(comments, { status });
+    return ranked.slice(0, maxItems);
+  }, [comments, status, maxItems]);
+
+  // Fetch display names for most commented users
+  useEffect(() => {
+    if (topCommentsForEnrichment.length === 0) {
+      setMostCommentedUserNames([]);
+      return;
+    }
+
+    let cancelled = false;
+
+    // Calculate most commented user for each thread
+    const mostCommentedUserIds = topCommentsForEnrichment.map(node => findMostCommentedUser(node));
+
+    // Fetch display names for unique user IDs
+    const uniqueUserIds = [...new Set(mostCommentedUserIds.filter(id => id !== null))];
+    
+    Promise.all(
+      uniqueUserIds.map(async (userId) => {
+        try {
+          const user = await getUserInfo(userId);
+          return { userId, displayName: user?.displayName || 'Unknown User' };
+        } catch {
+          return { userId, displayName: 'Unknown User' };
+        }
+      })
+    ).then((userInfoArray) => {
+      if (!cancelled) {
+        // Create a map for quick lookup
+        const userMap = new Map(userInfoArray.map(info => [info.userId, info.displayName]));
+        
+        // Map back to the original order, matching each thread to its most commented user's display name
+        const displayNames = mostCommentedUserIds.map(userId => 
+          userId ? (userMap.get(userId) || 'Unknown User') : null
+        );
+        
+        setMostCommentedUserNames(displayNames);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [topCommentsForEnrichment]);
 
   const chartOption = useMemo(() => {
     if (!comments || comments.length === 0) {
@@ -60,6 +113,12 @@ export default function CommentRepliesChart({
     // Reverse order for display (most replies at top of chart)
     const reversed = [...scoredComments].reverse();
     rankedCommentsRef.current = reversed;
+    
+    // Reverse mostCommentedUserNames to match the reversed chart data order
+    // Ensure we have enough names (pad with null if needed)
+    const reversedUserNames = mostCommentedUserNames.length > 0 
+      ? [...mostCommentedUserNames].reverse()
+      : [];
 
     // Prepare chart data: labels (selected text), tooltips (comment body), and values (thread counts)
     const labels = reversed.map((node) => getCommentLabel(node, 20));
@@ -101,7 +160,16 @@ export default function CommentRepliesChart({
           const tooltip = tooltipLabels[item.dataIndex];
           const replyCount = replyCounts[item.dataIndex];
           const participantCount = participantCounts[item.dataIndex];
-          return `<span style="color:${COLORS.N200}">${tooltip}</span><br/><strong>${replyCount}</strong> ${replyCount === 1 ? 'reply' : 'replies'}<br/><strong>${participantCount}</strong> ${participantCount === 1 ? 'participant' : 'participants'}`;
+          const mostCommentedBy = reversedUserNames[item.dataIndex];
+          
+          let tooltipContent = `<span style="color:${COLORS.N200}">${tooltip}</span><br/><strong>${replyCount}</strong> ${replyCount === 1 ? 'reply' : 'replies'}<br/><strong>${participantCount}</strong> ${participantCount === 1 ? 'participant' : 'participants'}`;
+          
+          // Add most commented by user if available
+          if (mostCommentedBy) {
+            tooltipContent += `<br/>Most commented by: <strong>${mostCommentedBy}</strong>`;
+          }
+          
+          return tooltipContent;
         },
       },
       grid: {
@@ -159,7 +227,7 @@ export default function CommentRepliesChart({
         },
       ],
     };
-  }, [comments, status, maxItems]);
+  }, [comments, status, maxItems, mostCommentedUserNames]);
 
   const chartHeight = chartOption?.height || 200;
 
