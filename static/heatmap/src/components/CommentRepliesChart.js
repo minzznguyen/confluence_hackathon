@@ -18,12 +18,12 @@ import { COMMENT_STATUS } from '../constants';
  * 
  * @param {Array} comments - Array of comment objects
  * @param {string} [status=COMMENT_STATUS.OPEN] - Filter comments by status
- * @param {number} [maxItems=10] - Maximum number of items to display
+ * @param {number} [maxItems] - Maximum number of items to display (shows all if not specified)
  */
 export default function CommentRepliesChart({
   comments,
   status = COMMENT_STATUS.OPEN,
-  maxItems = 10,
+  maxItems,
   onBarClick,
 }) {
   // Store ranked comments for click handler access
@@ -161,6 +161,6 @@ CommentRepliesChart.propTypes = {
 CommentRepliesChart.defaultProps = {
   comments: [],
   status: COMMENT_STATUS.OPEN,
-  maxItems: 10,
+  maxItems: undefined,
   onBarClick: null,
 };

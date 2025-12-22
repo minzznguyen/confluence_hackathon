@@ -206,10 +206,10 @@ body.conf-popup-open .conf-main::before {
 }
 
 /* Enhanced effect for browsers that support backdrop-filter */
-@supports (backdrop-filter: blur(2px)) {
+@supports (backdrop-filter: blur(1px)) {
   body.conf-popup-open .conf-main::before {
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(2px);
+    background: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(1px);
   }
 }
 
