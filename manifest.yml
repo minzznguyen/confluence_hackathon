@@ -1,88 +1,24 @@
 modules:
-  confluence:spacePage:
+  confluence:fullPage:
     - key: confluence-hackathon-full-page
-      title: Space Page
       resource: main
       resolver:
         function: resolver
-      route: hello-world
+      routePrefix: hello-world
   
   confluence:contentBylineItem:
-    - key: metadata-content-byline
-      title: Metadata
+    - key: heatmap-content-byline
+      title: Heatmap
+      tooltip: Click to view heatmap
       icon: https://developer.atlassian.com/platform/forge/images/icons/issue.svg
       resource: main
       resolver:
         function: resolver
-      viewportContainer: popup
-
-  rovo:agent:
-    - key: heatmap-agent
-      name: "Heatmap Rovo Assistant"
-      description: A Rovo Agent that explains and analyzes the comment heatmap on a Confluence page, highlighting highly discussed sections, unresolved comments, and areas that need more attention.
-      # icon: resource:example-resource;icons/risk-agent.svg
-      prompt: |
-        You are a Confluence collaboration expert for our heatmap application.
-        Your role is to help users interpret the heatmap and take actions by highlighting discussion hotspots, hot topics, unresolved threads, and areas that require review or follow-up.
-
-        You can help with the following job: Identifying discussion hotspots and hot topics
-
-        I'll separate the instructions for each job with a. '---' on a new line, followed by the job title.
-        ---
-        Identifying discussion hotspots and hot topics:
-
-        Identify sections of the page with high comment activity and highlight the main topics being actively discussed.
-        To do this, follow these steps:
-        - Call the getConfluenceComments function to get back all the hottest comments for the current Confluence page
-        - From the response of the getConfluenceComments function above, can you help me point to the text that the hottest comments start (the first item in the array returned from the getConfluenceComments function) and summarize what the hottest section in this Confluence doc is about?
-
-      conversationStarters:
-        # - What does this heatmap show?
-        - What section of this Confluence page has the most discussion?
-        # - Where should I focus my review?
-        # - Are there any unresolved or active discussions?
-        # - What are people mainly commenting about?
-      actions:
-        # - fetch-heatmap-data
-        - get-confluence-comments
-        # - count-replies
-        # - fetch-unresolved-comments
-
-  action:
-    - key: get-confluence-comments
-      function: getConfluenceComments
-      actionVerb: GET
-      description: >
-        When a user asks what sections are most discussed, get back all the comments for the current Confluence page to analyze
-      inputs:
-        message:
-          title: Message
-          type: string
-          required: true
-          description: |
-            "Message from user that is asking about what sections are most discussed in this Confluence page"
-
-    # - key: count-replies
-    #   function: countReplies
-    #   actionVerb: GET
-    #   description: >
-    #     Check the replies of each comment and return the content of the comment with the most replies
-    #   inputs:
-    #     comments:
-    #       title: Comments
-    #       type: string
-    #       required: true
-    #       description: |
-    #         "All the comments objects for this current Confluence page"
-    
+      viewportContainer: modal
+  
   function:
     - key: resolver
       handler: index.handler
-    - key: getConfluenceComments
-      handler: index.getConfluenceComments
-    # - key: countReplies
-    #   handler: index.countReplies
-
 resources:
   - key: main
     path: static/hello-world/build
